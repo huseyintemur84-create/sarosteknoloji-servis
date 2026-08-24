@@ -13,7 +13,7 @@
       --accent: #1d4ed8;    
       --bg: #f8fafc;
       --text: #1e293b;
-      --sidebar-bg: #ffffff; /* Sol menü MAVİSİ SİLİNDİ (Temiz Beyaz Yapıldı) */
+      --sidebar-bg: #ffffff; 
       --sidebar-text: #334155;
       --warning: #f59e0b;  
       --danger: #dc2626;   
@@ -36,7 +36,6 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    /* MOBİL LOGO (BÜYÜTÜLMÜŞ VE BEYAZLIKLARI SİLİNMİŞ) */
     .mobile-logo { 
       height: 60px; 
       width: auto;
@@ -58,7 +57,7 @@
       font-weight: bold;
     }
 
-    /* Sol Menü (Masaüstü - Mavi Renk Silindi) */
+    /* Sol Menü */
     .sidebar { 
       width: 280px; 
       background: var(--sidebar-bg) !important; 
@@ -81,20 +80,18 @@
       background: #ffffff;
     }
     
-    /* MASAÜSTÜ LOGO (DAHA BÜYÜK VE BEYAZ ARKA PLANI ŞEFFAF YAPILMIŞ) */
     .sidebar-logo { 
       width: 100%; 
       max-width: 250px; 
       height: auto; 
       max-height: 140px; 
       object-fit: contain !important; 
-      mix-blend-mode: multiply; /* Görselin etrafındaki beyazlığı yok eder */
+      mix-blend-mode: multiply; 
       filter: contrast(110%);
       display: block; 
       margin: 0 auto;
     }
 
-    /* Menü Elemanları */
     .menu-item { 
       padding: 15px 25px; 
       cursor: pointer; 
@@ -130,7 +127,7 @@
     .form-group label { font-size: 13px; font-weight: 600; }
     .form-group input, .form-group select, .form-group textarea { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; width: 100%; }
     
-    /* Tablo & Mobil Kaydırma */
+    /* Tablo */
     .table-container { width: 100%; overflow-x: auto; margin-top: 15px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 600px; }
     th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
@@ -151,11 +148,10 @@
 
     /* Özel Buton Renkleri */
     .btn-warning { background-color: var(--warning) !important; color: white !important; }
-    .btn-danger { background-color: var(--danger) !important; color: white !important; }
+    .btn-danger { background-color: var(--primary) !important; color: white !important; } /* SİL BUTONU YEDEK İNDİR İLE AYNI MAVİ YAPILDI */
     .btn-excel { background-color: #10b981 !important; color: white !important; }
     .actions { display: flex; gap: 5px; }
 
-    /* Mobil Ekran Düzenlemeleri (768px Altı) */
     @media (max-width: 768px) {
       body { flex-direction: column; }
       .mobile-header { display: flex; }
