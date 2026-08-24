@@ -32,13 +32,15 @@
       z-index: 1000;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    /* MOBİL LOGO (BOŞLUKSUZ) */
+    /* MOBİL LOGO (SADECE LOGO, SIFIR BOŞLUK) */
     .mobile-logo { 
       height: 48px; 
-      background: #ffffff; 
-      padding: 0; /* Beyaz iç boşluklar sıfırlandı */
-      border-radius: 6px; 
-      object-fit: cover; /* Sağ-sol boşluk kalmadan oturmasını sağlar */
+      width: auto;
+      background: transparent; 
+      padding: 0; 
+      margin: 0;
+      border-radius: 0; 
+      object-fit: contain; 
       display: block;
     }
     .menu-toggle {
@@ -56,21 +58,21 @@
     .sidebar { width: 280px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px 0; flex-shrink: 0; }
     .sidebar-header { padding: 10px 15px 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.2); text-align: center; }
     
-    /* MASAÜSTÜ LOGO (BOŞLUKSUZ) */
+    /* MASAÜSTÜ LOGO (SADECE LOGO, SIFIR BOŞLUK) */
     .sidebar-logo { 
-      width: 100%; 
-      max-width: 240px; 
-      height: 90px; 
-      background: #ffffff; 
-      padding: 0; /* Beyaz iç boşluklar sıfırlandı */
-      border-radius: 8px; 
-      object-fit: cover; /* Sağ-sol beyazlıklar elendi */
+      width: auto; 
+      max-width: 100%; 
+      height: 80px; 
+      background: transparent; 
+      padding: 0; 
+      margin: 0 auto;
+      border-radius: 0; 
+      object-fit: contain; 
       display: block; 
-      margin: 0 auto; 
     }
 
-    .menu-item { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; font-weight: 500; }
-    .menu-item:hover, .menu-item.active { background: rgba(0,0,0,0.15); border-left: 4px solid #ffffff; }
+    .menu-item { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; font-weight: 500; background: transparent; color: white; }
+    .menu-item:hover, .menu-item.active { background: rgba(0,0,0,0.15) !important; border-left: 4px solid #ffffff; }
 
     /* Ana İçerik */
     .main-content { flex: 1; padding: 20px; overflow-y: auto; width: 100%; }
