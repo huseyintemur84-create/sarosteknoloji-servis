@@ -22,7 +22,7 @@
       display: none;
       background: var(--primary);
       color: white;
-      padding: 12px 20px;
+      padding: 10px 20px;
       justify-content: space-between;
       align-items: center;
       position: sticky;
@@ -30,7 +30,7 @@
       z-index: 1000;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .mobile-header h2 { font-size: 16px; color: #60a5fa; }
+    .mobile-logo { height: 35px; background: #fff; padding: 2px 6px; border-radius: 4px; }
     .menu-toggle {
       background: var(--accent);
       color: white;
@@ -44,7 +44,8 @@
 
     /* Sol Menü (Masaüstü) */
     .sidebar { width: 250px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px 0; flex-shrink: 0; }
-    .sidebar h2 { padding: 0 20px 20px 20px; font-size: 18px; border-bottom: 1px solid #334155; color: #60a5fa; }
+    .sidebar-header { padding: 0 20px 20px 20px; border-bottom: 1px solid #334155; text-align: center; }
+    .sidebar-logo { max-width: 100%; height: auto; max-height: 70px; background: #ffffff; padding: 6px; border-radius: 6px; object-fit: contain; }
     .menu-item { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
     .menu-item:hover, .menu-item.active { background: var(--accent); }
 
@@ -84,7 +85,7 @@
         background: #1e293b;
       }
       .sidebar.open { display: flex !important; }
-      .sidebar h2 { display: none; }
+      .sidebar-header { display: none; }
       .menu-item { border-bottom: 1px solid #334155; padding: 12px 20px; }
       .main-content { padding: 12px; }
     }
@@ -104,13 +105,15 @@
 
   <!-- MOBİL BAŞLIK VE MENÜ BUTONU -->
   <div class="mobile-header">
-    <h2>Saros Teknoloji</h2>
+    <img src="Saros.jpg" alt="Saros Teknoloji" class="mobile-logo">
     <button class="menu-toggle" onclick="toggleMenu()">☰ Menü</button>
   </div>
 
   <!-- SOL MENÜ -->
   <div class="sidebar" id="sidebar">
-    <h2>Saros Teknoloji</h2>
+    <div class="sidebar-header">
+      <img src="Saros.jpg" alt="Saros Teknoloji Logo" class="sidebar-logo">
+    </div>
     <div class="menu-item active" onclick="showSection('customers', event)">Müşteri Kayıtları</div>
     <div class="menu-item" onclick="showSection('services', event)">Servis Kayıtları</div>
     <div class="menu-item" onclick="showSection('todos', event)">Yapılacaklar</div>
@@ -134,7 +137,7 @@
             <div class="form-group"><label>Vergi Numarası</label><input type="text" id="custTaxNo"></div>
           </div>
           <div class="form-group" style="margin-bottom:15px;"><label>Adres</label><textarea id="custAddress" rows="2"></textarea></div>
-          <button type="submit" class="btn">Müşteriyi Kaydet</button>
+          <button type="submit" class="btn" id="custBtn">Müşteriyi Kaydet</button>
         </form>
       </div>
 
@@ -161,7 +164,11 @@
         <form id="serviceForm" onsubmit="saveService(event)" style="margin-top:15px;">
           <input type="hidden" id="servId">
           <div class="form-grid">
-            <div class="form-group"><label>Müşteri</label><select id="servCust" required></select></div>
+            <div class="form-group">
+              <label>Müşteri (Yazarak Ara veya Seç)</label>
+              <input list="customerListOptions" id="servCustInput" placeholder="Müşteri ara..." required>
+              <datalist id="customerListOptions"></datalist>
+            </div>
             <div class="form-group"><label>Servis Tarihi</label><input type="date" id="servDate" required></div>
             <div class="form-group"><label>Cihaz Modeli</label><input type="text" id="servModel" required></div>
             <div class="form-group"><label>Sicil Numarası</label><input type="text" id="servSicil" required></div>
@@ -171,7 +178,7 @@
             <div class="form-group"><label>Bildirilen Arıza</label><textarea id="servFault" rows="2" required></textarea></div>
             <div class="form-group"><label>Yapılan İşlem</label><textarea id="servAction" rows="2" required></textarea></div>
           </div>
-          <button type="submit" class="btn">Servis Kaydını Kaydet</button>
+          <button type="submit" class="btn" id="servBtn">Servis Kaydını Kaydet</button>
         </form>
       </div>
 
@@ -194,12 +201,15 @@
     <!-- 3. YAPILACAKLAR -->
     <div id="todos" class="section">
       <div class="card">
-        <h3>Yeni Görev Ekle</h3>
+        <h3>Görev Ekle / Düzenle</h3>
         <form id="todoForm" onsubmit="saveTodo(event)" style="margin-top:15px;">
           <input type="hidden" id="todoId">
           <div class="form-grid">
             <div class="form-group"><label>Görev Tanımı</label><input type="text" id="todoTask" required></div>
-            <div class="form-group"><label>İlişkili Müşteri (Opsiyonel)</label><select id="todoCust"></select></div>
+            <div class="form-group">
+              <label>İlişkili Müşteri (Opsiyonel - Yazarak Ara)</label>
+              <input list="customerListOptions" id="todoCustInput" placeholder="Müşteri ara...">
+            </div>
             <div class="form-group"><label>Tarih</label><input type="date" id="todoDate" required></div>
             <div class="form-group"><label>Öncelik</label>
               <select id="todoPriority">
@@ -209,7 +219,7 @@
               </select>
             </div>
           </div>
-          <button type="submit" class="btn">Görev Ekle</button>
+          <button type="submit" class="btn" id="todoBtn">Görev Ekle</button>
         </form>
       </div>
 
@@ -328,6 +338,17 @@
       }
     }
 
+    // Müşteri İsmini ID'ye dönüştürme ve tersi yardımcılar
+    function getCustIdByName(name) {
+      const c = (window.db.customers || []).find(item => item.name === name);
+      return c ? c.id : name; // Eğer bulunamazsa direkt metni döndürür
+    }
+
+    function getCustNameById(id) {
+      const c = (window.db.customers || []).find(item => item.id === id);
+      return c ? c.name : id;
+    }
+
     // Müşteri İşlemleri
     function saveCustomer(e) {
       e.preventDefault();
@@ -347,6 +368,7 @@
       
       document.getElementById('customerForm').reset();
       document.getElementById('custId').value = '';
+      document.getElementById('custBtn').innerText = 'Müşteriyi Kaydet';
       saveDB();
     }
 
@@ -359,6 +381,7 @@
       document.getElementById('custTaxOffice').value = c.taxOffice;
       document.getElementById('custTaxNo').value = c.taxNo;
       document.getElementById('custAddress').value = c.address;
+      document.getElementById('custBtn').innerText = 'Müşteri Güncelle';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -373,9 +396,10 @@
     function saveService(e) {
       e.preventDefault();
       const id = document.getElementById('servId').value || Date.now().toString();
+      const custNameInput = document.getElementById('servCustInput').value;
       const servData = {
         id,
-        custId: document.getElementById('servCust').value,
+        custId: getCustIdByName(custNameInput),
         date: document.getElementById('servDate').value,
         model: document.getElementById('servModel').value,
         sicil: document.getElementById('servSicil').value,
@@ -390,6 +414,7 @@
 
       document.getElementById('serviceForm').reset();
       document.getElementById('servId').value = '';
+      document.getElementById('servBtn').innerText = 'Servis Kaydını Kaydet';
       saveDB();
     }
 
@@ -397,13 +422,14 @@
       const s = window.db.services.find(item => item.id === id);
       if(!s) return;
       document.getElementById('servId').value = s.id;
-      document.getElementById('servCust').value = s.custId;
+      document.getElementById('servCustInput').value = getCustNameById(s.custId);
       document.getElementById('servDate').value = s.date;
       document.getElementById('servModel').value = s.model;
       document.getElementById('servSicil').value = s.sicil;
       document.getElementById('servPrice').value = s.price;
       document.getElementById('servFault').value = s.fault;
       document.getElementById('servAction').value = s.action;
+      document.getElementById('servBtn').innerText = 'Servis Kaydını Güncelle';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -418,31 +444,51 @@
     function saveTodo(e) {
       e.preventDefault();
       const id = document.getElementById('todoId').value || Date.now().toString();
+      const custNameInput = document.getElementById('todoCustInput').value;
       const todoData = {
         id,
         task: document.getElementById('todoTask').value,
-        custId: document.getElementById('todoCust').value,
+        custId: custNameInput ? getCustIdByName(custNameInput) : '',
         date: document.getElementById('todoDate').value,
         priority: document.getElementById('todoPriority').value
       };
 
-      window.db.todos.push(todoData);
+      const idx = window.db.todos.findIndex(t => t.id === id);
+      if(idx > -1) window.db.todos[idx] = todoData;
+      else window.db.todos.push(todoData);
+
       document.getElementById('todoForm').reset();
+      document.getElementById('todoId').value = '';
+      document.getElementById('todoBtn').innerText = 'Görev Ekle';
       saveDB();
     }
 
+    function editTodo(id) {
+      const t = window.db.todos.find(item => item.id === id);
+      if(!t) return;
+      document.getElementById('todoId').value = t.id;
+      document.getElementById('todoTask').value = t.task;
+      document.getElementById('todoCustInput').value = t.custId ? getCustNameById(t.custId) : '';
+      document.getElementById('todoDate').value = t.date;
+      document.getElementById('todoPriority').value = t.priority;
+      document.getElementById('todoBtn').innerText = 'Görev Güncelle';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function deleteTodo(id) {
-      window.db.todos = window.db.todos.filter(t => t.id !== id);
-      saveDB();
+      if(confirm('Görevi tamamlandı olarak işaretleyip silmek istiyor musunuz?')) {
+        window.db.todos = window.db.todos.filter(t => t.id !== id);
+        saveDB();
+      }
     }
 
     // Ekranı Güncelleme
     function renderAll() {
-      const custOptions = '<option value="">Müşteri Seçiniz...</option>' + 
-        (window.db.customers || []).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-      document.getElementById('servCust').innerHTML = custOptions;
-      document.getElementById('todoCust').innerHTML = custOptions;
+      // Datalist için Müşteri Seçeneklerini Doldur
+      const customerOptions = (window.db.customers || []).map(c => `<option value="${c.name}">`).join('');
+      document.getElementById('customerListOptions').innerHTML = customerOptions;
 
+      // Müşteriler Listesi
       document.getElementById('customerTableBody').innerHTML = (window.db.customers || []).map(c => `
         <tr>
           <td>${c.name}</td>
@@ -456,12 +502,13 @@
         </tr>
       `).join('');
 
+      // Servis Kayıtları Listesi
       document.getElementById('serviceTableBody').innerHTML = (window.db.services || []).map(s => {
-        const cust = (window.db.customers || []).find(c => c.id === s.custId);
+        const custName = getCustNameById(s.custId);
         return `
           <tr>
             <td>${s.date}</td>
-            <td>${cust ? cust.name : 'Bilinmeyen Müşteri'}</td>
+            <td>${custName || 'Bilinmeyen Müşteri'}</td>
             <td>${s.model} (${s.sicil})</td>
             <td>${s.fault}</td>
             <td>${s.action}</td>
@@ -474,15 +521,19 @@
         `;
       }).join('');
 
-      document.getElementById('todoTableBody').innerHTML = (window.db.todos || []).map(t => {
-        const cust = (window.db.customers || []).find(c => c.id === t.custId);
+      // Yapılacaklar Listesi (Tarihe Göre Sıralı)
+      const sortedTodos = [...(window.db.todos || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      document.getElementById('todoTableBody').innerHTML = sortedTodos.map(t => {
+        const custName = t.custId ? getCustNameById(t.custId) : '-';
         return `
           <tr>
             <td>${t.date}</td>
             <td>${t.task}</td>
-            <td>${cust ? cust.name : '-'}</td>
+            <td>${custName}</td>
             <td>${t.priority}</td>
             <td class="actions">
+              <button class="btn btn-warning" onclick="editTodo('${t.id}')">Düzenle</button>
               <button class="btn btn-danger" onclick="deleteTodo('${t.id}')">Tamamlandı / Sil</button>
             </td>
           </tr>
@@ -499,8 +550,7 @@
       const action = document.getElementById('repAction').value.toLowerCase();
 
       const filtered = (window.db.services || []).filter(s => {
-        const cust = (window.db.customers || []).find(c => c.id === s.custId);
-        const custName = cust ? cust.name.toLowerCase() : '';
+        const custName = getCustNameById(s.custId).toLowerCase();
         
         const matchName = !name || custName.includes(name);
         const matchAction = !action || s.action.toLowerCase().includes(action);
@@ -511,11 +561,11 @@
       });
 
       document.getElementById('reportTableBody').innerHTML = filtered.map(s => {
-        const cust = (window.db.customers || []).find(c => c.id === s.custId);
+        const custName = getCustNameById(s.custId);
         return `
           <tr>
             <td>${s.date}</td>
-            <td>${cust ? cust.name : '-'}</td>
+            <td>${custName || '-'}</td>
             <td>${s.model}</td>
             <td>${s.action}</td>
             <td>${s.price} TL</td>
@@ -557,4 +607,4 @@
     }
   </script>
 </body>
-</html><script async src="/.netlify/scripts/hud?variant=public" data-nf-variant="public" data-netlify-site-id="44046562-3f2e-45b7-85dd-02eadd9dbd9e" data-app-host="app.netlify.com"></script>
+</html>
