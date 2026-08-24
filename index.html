@@ -13,6 +13,7 @@
       --accent: #2563eb;
       --bg: #f8fafc;
       --text: #334155;
+      --danger: #ef4444;
     }
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
     body { display: flex; flex-direction: row; min-height: 100vh; background: var(--bg); color: var(--text); }
@@ -30,7 +31,7 @@
       z-index: 1000;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .mobile-logo { height: 35px; background: #fff; padding: 2px 6px; border-radius: 4px; }
+    .mobile-logo { height: 35px; background: #fff; padding: 2px 6px; border-radius: 4px; object-fit: contain; }
     .menu-toggle {
       background: var(--accent);
       color: white;
@@ -70,7 +71,7 @@
     /* Buton Renkleri */
     .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; background: var(--accent); color: white; }
     .btn-warning { background: #f59e0b; color: white; } /* DÜZENLE: SARI */
-    .btn-danger { background: #2563eb; color: white; }  /* SİL: MAVİ */
+    .btn-danger { background: var(--danger); color: white; }  /* SİL: KIRMIZI */
     .btn-excel { background: #10b981; }
     .actions { display: flex; gap: 5px; }
 
@@ -105,14 +106,14 @@
 
   <!-- MOBİL BAŞLIK VE MENÜ BUTONU -->
   <div class="mobile-header">
-    <img src="Saros.jpg" alt="Saros Teknoloji" class="mobile-logo">
+    <img src="Saros_2.jpg" alt="Saros Teknoloji" class="mobile-logo">
     <button class="menu-toggle" onclick="toggleMenu()">☰ Menü</button>
   </div>
 
   <!-- SOL MENÜ -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <img src="Saros.jpg" alt="Saros Teknoloji Logo" class="sidebar-logo">
+      <img src="Saros_2.jpg" alt="Saros Teknoloji Logo" class="sidebar-logo">
     </div>
     <div class="menu-item active" onclick="showSection('customers', event)">Müşteri Kayıtları</div>
     <div class="menu-item" onclick="showSection('services', event)">Servis Kayıtları</div>
