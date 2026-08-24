@@ -9,11 +9,11 @@
   
   <style>
     :root {
-      --primary: #1e293b;
+      --primary: #1e293b; /* LACİVERT */
       --accent: #2563eb;
       --bg: #f8fafc;
       --text: #334155;
-      --danger: #ef4444;
+      --warning: #f59e0b; /* SARI */
     }
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
     body { display: flex; flex-direction: row; min-height: 100vh; background: var(--bg); color: var(--text); }
@@ -23,7 +23,7 @@
       display: none;
       background: var(--primary);
       color: white;
-      padding: 10px 20px;
+      padding: 12px 20px;
       justify-content: space-between;
       align-items: center;
       position: sticky;
@@ -31,7 +31,7 @@
       z-index: 1000;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .mobile-logo { height: 35px; background: #fff; padding: 2px 6px; border-radius: 4px; object-fit: contain; }
+    .mobile-logo { height: 50px; background: #fff; padding: 4px 8px; border-radius: 6px; object-fit: contain; }
     .menu-toggle {
       background: var(--accent);
       color: white;
@@ -44,10 +44,10 @@
     }
 
     /* Sol Menü (Masaüstü) */
-    .sidebar { width: 250px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px 0; flex-shrink: 0; }
-    .sidebar-header { padding: 0 20px 20px 20px; border-bottom: 1px solid #334155; text-align: center; }
-    .sidebar-logo { max-width: 100%; height: auto; max-height: 70px; background: #ffffff; padding: 6px; border-radius: 6px; object-fit: contain; }
-    .menu-item { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+    .sidebar { width: 280px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px 0; flex-shrink: 0; }
+    .sidebar-header { padding: 10px 15px 20px 15px; border-bottom: 1px solid #334155; text-align: center; }
+    .sidebar-logo { width: 100%; max-width: 240px; height: auto; max-height: 120px; background: #ffffff; padding: 8px; border-radius: 8px; object-fit: contain; display: block; margin: 0 auto; }
+    .menu-item { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; font-weight: 500; }
     .menu-item:hover, .menu-item.active { background: var(--accent); }
 
     /* Ana İçerik */
@@ -70,8 +70,8 @@
     
     /* Buton Renkleri */
     .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; background: var(--accent); color: white; }
-    .btn-warning { background: #f59e0b; color: white; } /* DÜZENLE: SARI */
-    .btn-danger { background: var(--danger); color: white; }  /* SİL: KIRMIZI */
+    .btn-warning { background: var(--warning); color: white; } /* DÜZENLE: SARI */
+    .btn-danger { background: var(--primary); color: white; }   /* SİL / BİTİR: LACİVERT */
     .btn-excel { background: #10b981; }
     .actions { display: flex; gap: 5px; }
 
