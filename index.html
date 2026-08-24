@@ -10,7 +10,7 @@
   <style>
     :root {
       --primary: #2563eb;   /* GÖRSELDEKİ CANLI MAVİ RENK */
-      --accent: #1d4ed8;    /* KOYUMSU MAVİ (HOVER DOKUNUŞLARI İÇİN) */
+      --accent: #1d4ed8;    /* KOYUMSU MAVİ */
       --bg: #f8fafc;
       --text: #334155;
       --warning: #f59e0b;  /* SARI / TURUNCU */
@@ -22,7 +22,7 @@
     /* Üst Mobil Bar (Masaüstünde Gizli) */
     .mobile-header {
       display: none;
-      background: var(--primary);
+      background: var(--primary) !important;
       color: white;
       padding: 10px 15px;
       justify-content: space-between;
@@ -32,20 +32,23 @@
       z-index: 1000;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    /* MOBİL LOGO (SADECE LOGO, SIFIR BOŞLUK) */
+
+    /* MOBİL LOGO (KIRPILMIŞ / BEYAZLIKSIZ) */
     .mobile-logo { 
-      height: 48px; 
-      width: auto;
-      background: transparent; 
+      height: 45px; 
+      width: 140px;
+      background: #ffffff; 
       padding: 0; 
       margin: 0;
-      border-radius: 0; 
-      object-fit: contain; 
+      border-radius: 4px; 
+      object-fit: cover !important; 
+      object-position: center !important;
       display: block;
     }
+
     .menu-toggle {
-      background: #ffffff;
-      color: var(--primary);
+      background: #ffffff !important;
+      color: var(--primary) !important;
       border: none;
       padding: 8px 14px;
       border-radius: 4px;
@@ -55,24 +58,53 @@
     }
 
     /* Sol Menü (Masaüstü) */
-    .sidebar { width: 280px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px 0; flex-shrink: 0; }
-    .sidebar-header { padding: 10px 15px 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.2); text-align: center; }
+    .sidebar { 
+      width: 280px; 
+      background: var(--primary) !important; 
+      color: white; 
+      display: flex; 
+      flex-direction: column; 
+      padding: 20px 0; 
+      flex-shrink: 0; 
+    }
+
+    .sidebar-header { 
+      padding: 10px 15px 20px 15px; 
+      border-bottom: 1px solid rgba(255,255,255,0.2); 
+      text-align: center; 
+    }
     
-    /* MASAÜSTÜ LOGO (SADECE LOGO, SIFIR BOŞLUK) */
+    /* MASAÜSTÜ LOGO (KENAR BEYAZLIKLARI KIRPILMIŞ) */
     .sidebar-logo { 
-      width: auto; 
-      max-width: 100%; 
-      height: 80px; 
-      background: transparent; 
+      width: 100%; 
+      max-width: 220px; 
+      height: 75px; 
+      background: #ffffff; 
       padding: 0; 
       margin: 0 auto;
-      border-radius: 0; 
-      object-fit: contain; 
+      border-radius: 6px; 
+      object-fit: cover !important; 
+      object-position: center !important; 
       display: block; 
     }
 
-    .menu-item { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; font-weight: 500; background: transparent; color: white; }
-    .menu-item:hover, .menu-item.active { background: rgba(0,0,0,0.15) !important; border-left: 4px solid #ffffff; }
+    /* Menü Elemanları (Maviye Zorlanmış) */
+    .menu-item { 
+      padding: 15px 20px; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      gap: 10px; 
+      transition: 0.2s; 
+      font-weight: 500; 
+      background: transparent !important; 
+      color: #ffffff !important; 
+    }
+
+    .menu-item:hover, .menu-item.active { 
+      background: rgba(0,0,0,0.2) !important; 
+      border-left: 4px solid #ffffff; 
+    }
 
     /* Ana İçerik */
     .main-content { flex: 1; padding: 20px; overflow-y: auto; width: 100%; }
@@ -92,12 +124,23 @@
     th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
     th { background: #f1f5f9; }
     
-    /* Buton Renkleri */
-    .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; background: var(--primary); color: white; transition: 0.2s; }
+    /* Buton Renkleri (Maviye Zorlanmış) */
+    .btn, button[type="submit"] { 
+      padding: 8px 16px; 
+      border: none; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-weight: 600; 
+      background-color: var(--primary) !important; 
+      color: #ffffff !important; 
+      transition: 0.2s; 
+    }
     .btn:hover { opacity: 0.9; }
-    .btn-warning { background: var(--warning); color: white; }
-    .btn-danger { background: var(--danger); color: white; }
-    .btn-excel { background: #10b981; }
+
+    /* Özel Buton Renkleri */
+    .btn-warning { background-color: var(--warning) !important; color: white !important; }
+    .btn-danger { background-color: var(--danger) !important; color: white !important; }
+    .btn-excel { background-color: #10b981 !important; color: white !important; }
     .actions { display: flex; gap: 5px; }
 
     /* Mobil Ekran Düzenlemeleri (768px Altı) */
@@ -108,7 +151,7 @@
         display: none;
         width: 100%;
         padding: 0;
-        background: var(--primary);
+        background: var(--primary) !important;
       }
       .sidebar.open { display: flex !important; }
       .sidebar-header { display: none; }
@@ -586,7 +629,7 @@
       }).join('');
     };
 
-    // Temiz Veri Nesnesi ile Excel Dışa Aktarımı
+    // Excel Dışa Aktarımı
     window.exportDataToExcel = function(type) {
       let exportData = [];
       let filename = "";
