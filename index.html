@@ -70,8 +70,8 @@
     
     /* Buton Renkleri */
     .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; background: var(--accent); color: white; }
-    .btn-warning { background: var(--warning); color: white; } /* DÜZENLE: SARI */
-    .btn-danger { background: var(--primary); color: white; }   /* SİL / BİTİR: LACİVERT */
+    .btn-warning { background: var(--warning); color: white; }
+    .btn-danger { background: var(--primary); color: white; }
     .btn-excel { background: #10b981; }
     .actions { display: flex; gap: 5px; }
 
@@ -91,16 +91,6 @@
       .main-content { padding: 12px; }
     }
   </style>
-
-  <script>
-    // Menü Açma/Kapatma Fonksiyonu
-    function toggleMenu() {
-      var sidebar = document.getElementById('sidebar');
-      if (sidebar) {
-        sidebar.classList.toggle('open');
-      }
-    }
-  </script>
 </head>
 <body>
 
@@ -145,7 +135,7 @@
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <h3>Müşteri Listesi</h3>
-          <button class="btn btn-excel" onclick="exportToExcel('customerTable', 'Musteri_Listesi')">Excel'e Aktar</button>
+          <button class="btn btn-excel" onclick="exportDataToExcel('customers')">Excel'e Aktar</button>
         </div>
         <div class="table-container">
           <table id="customerTable">
@@ -186,7 +176,7 @@
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <h3>Servis Kayıtları Listesi</h3>
-          <button class="btn btn-excel" onclick="exportToExcel('serviceTable', 'Servis_Kayitlari')">Excel'e Aktar</button>
+          <button class="btn btn-excel" onclick="exportDataToExcel('services')">Excel'e Aktar</button>
         </div>
         <div class="table-container">
           <table id="serviceTable">
@@ -247,7 +237,7 @@
           <div class="form-group"><label>Bitiş Tarihi</label><input type="date" id="repEndDate" onchange="filterReports()"></div>
           <div class="form-group"><label>Yapılan İşlem Ara</label><input type="text" id="repAction" oninput="filterReports()"></div>
         </div>
-        <button class="btn btn-excel" onclick="exportToExcel('reportTable', 'Servis_Raporu')" style="margin-top:10px;">Raporu Excel'e Aktar</button>
+        <button class="btn btn-excel" onclick="exportDataToExcel('reports')" style="margin-top:10px;">Raporu Excel'e Aktar</button>
       </div>
 
       <div class="card">
@@ -277,10 +267,10 @@
 
   </div>
 
-  <!-- FIREBASE ENTEGRASYONU -->
+  <!-- TEK SCRIPT MODÜLÜ (FIREBASE & UYGULAMA MANTIĞI) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDiMxKk4g1nMDdBRnrq0zdghTZGyvdi3mQ",
@@ -296,10 +286,13 @@
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
 
-    window.dbRef = ref;
-    window.dbSet = set;
-    window.dbRemove = remove;
-    window.database = database;
+    window.db = { customers: [], services: [], todos: [] };
+
+    // Bulut Veritabanı Kaydı
+    function saveDB() {
+      set(ref(database, 'saros_data'), window.db);
+      renderAll();
+    }
 
     // Anlık Bulut Dinleme
     onValue(ref(database, 'saros_data'), (snapshot) => {
@@ -315,34 +308,27 @@
       }
       renderAll();
     });
-  </script>
 
-  <script>
-    window.db = { customers: [], services: [], todos: [] };
+    // Menü Kontrolleri
+    window.toggleMenu = function() {
+      var sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.classList.toggle('open');
+    };
 
-    function saveDB() {
-      if (window.database && window.dbSet && window.dbRef) {
-        window.dbSet(window.dbRef(window.database, 'saros_data'), window.db);
-      }
-      renderAll();
-    }
-
-    function showSection(id, e) {
+    window.showSection = function(id, e) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
       document.getElementById(id).classList.add('active');
       if (e && e.target) e.target.classList.add('active');
 
       const sidebar = document.getElementById('sidebar');
-      if (sidebar) {
-        sidebar.classList.remove('open');
-      }
-    }
+      if (sidebar) sidebar.classList.remove('open');
+    };
 
-    // Müşteri İsmini ID'ye dönüştürme ve tersi yardımcılar
+    // Müşteri İsim-ID Dönüştürücüler
     function getCustIdByName(name) {
       const c = (window.db.customers || []).find(item => item.name === name);
-      return c ? c.id : name; // Eğer bulunamazsa direkt metni döndürür
+      return c ? c.id : name;
     }
 
     function getCustNameById(id) {
@@ -351,7 +337,7 @@
     }
 
     // Müşteri İşlemleri
-    function saveCustomer(e) {
+    window.saveCustomer = function(e) {
       e.preventDefault();
       const id = document.getElementById('custId').value || Date.now().toString();
       const custData = {
@@ -371,9 +357,9 @@
       document.getElementById('custId').value = '';
       document.getElementById('custBtn').innerText = 'Müşteriyi Kaydet';
       saveDB();
-    }
+    };
 
-    function editCustomer(id) {
+    window.editCustomer = function(id) {
       const c = window.db.customers.find(item => item.id === id);
       if(!c) return;
       document.getElementById('custId').value = c.id;
@@ -384,17 +370,17 @@
       document.getElementById('custAddress').value = c.address;
       document.getElementById('custBtn').innerText = 'Müşteri Güncelle';
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    };
 
-    function deleteCustomer(id) {
+    window.deleteCustomer = function(id) {
       if(confirm('Müşteriyi silmek istediğinize emin misiniz?')) {
         window.db.customers = window.db.customers.filter(c => c.id !== id);
         saveDB();
       }
-    }
+    };
 
     // Servis İşlemleri
-    function saveService(e) {
+    window.saveService = function(e) {
       e.preventDefault();
       const id = document.getElementById('servId').value || Date.now().toString();
       const custNameInput = document.getElementById('servCustInput').value;
@@ -417,9 +403,9 @@
       document.getElementById('servId').value = '';
       document.getElementById('servBtn').innerText = 'Servis Kaydını Kaydet';
       saveDB();
-    }
+    };
 
-    function editService(id) {
+    window.editService = function(id) {
       const s = window.db.services.find(item => item.id === id);
       if(!s) return;
       document.getElementById('servId').value = s.id;
@@ -432,17 +418,17 @@
       document.getElementById('servAction').value = s.action;
       document.getElementById('servBtn').innerText = 'Servis Kaydını Güncelle';
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    };
 
-    function deleteService(id) {
+    window.deleteService = function(id) {
       if(confirm('Servis kaydını silmek istediğinize emin misiniz?')) {
         window.db.services = window.db.services.filter(s => s.id !== id);
         saveDB();
       }
-    }
+    };
 
-    // Yapılacaklar
-    function saveTodo(e) {
+    // Yapılacaklar İşlemleri
+    window.saveTodo = function(e) {
       e.preventDefault();
       const id = document.getElementById('todoId').value || Date.now().toString();
       const custNameInput = document.getElementById('todoCustInput').value;
@@ -462,9 +448,9 @@
       document.getElementById('todoId').value = '';
       document.getElementById('todoBtn').innerText = 'Görev Ekle';
       saveDB();
-    }
+    };
 
-    function editTodo(id) {
+    window.editTodo = function(id) {
       const t = window.db.todos.find(item => item.id === id);
       if(!t) return;
       document.getElementById('todoId').value = t.id;
@@ -474,22 +460,22 @@
       document.getElementById('todoPriority').value = t.priority;
       document.getElementById('todoBtn').innerText = 'Görev Güncelle';
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    };
 
-    function deleteTodo(id) {
+    window.deleteTodo = function(id) {
       if(confirm('Görevi tamamlandı olarak işaretleyip silmek istiyor musunuz?')) {
         window.db.todos = window.db.todos.filter(t => t.id !== id);
         saveDB();
       }
-    }
+    };
 
-    // Ekranı Güncelleme
+    // Ekran Yenileme
     function renderAll() {
-      // Datalist için Müşteri Seçeneklerini Doldur
+      // Datalist Güncelleme
       const customerOptions = (window.db.customers || []).map(c => `<option value="${c.name}">`).join('');
       document.getElementById('customerListOptions').innerHTML = customerOptions;
 
-      // Müşteriler Listesi
+      // Müşteri Tablosu
       document.getElementById('customerTableBody').innerHTML = (window.db.customers || []).map(c => `
         <tr>
           <td>${c.name}</td>
@@ -503,7 +489,7 @@
         </tr>
       `).join('');
 
-      // Servis Kayıtları Listesi
+      // Servis Tablosu
       document.getElementById('serviceTableBody').innerHTML = (window.db.services || []).map(s => {
         const custName = getCustNameById(s.custId);
         return `
@@ -522,9 +508,8 @@
         `;
       }).join('');
 
-      // Yapılacaklar Listesi (Tarihe Göre Sıralı)
+      // Görev Tablosu
       const sortedTodos = [...(window.db.todos || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
-
       document.getElementById('todoTableBody').innerHTML = sortedTodos.map(t => {
         const custName = t.custId ? getCustNameById(t.custId) : '-';
         return `
@@ -541,10 +526,11 @@
         `;
       }).join('');
 
-      filterReports();
+      window.filterReports();
     }
 
-    function filterReports() {
+    // Rapor Filtreleme
+    window.filterReports = function() {
       const name = document.getElementById('repCust').value.toLowerCase();
       const start = document.getElementById('repStartDate').value;
       const end = document.getElementById('repEndDate').value;
@@ -573,15 +559,68 @@
           </tr>
         `;
       }).join('');
-    }
+    };
 
-    function exportToExcel(tableId, filename) {
-      const table = document.getElementById(tableId);
-      const wb = XLSX.utils.table_to_book(table, {sheet: "Sayfa1"});
-      XLSX.writeFile(wb, `${filename}.xlsx`);
-    }
+    // Temiz Veri Nesnesi ile Excel Dışa Aktarımı
+    window.exportDataToExcel = function(type) {
+      let exportData = [];
+      let filename = "";
 
-    function exportBackup() {
+      if (type === 'customers') {
+        filename = "Musteri_Listesi";
+        exportData = (window.db.customers || []).map(c => ({
+          "Müşteri Adı": c.name,
+          "Telefon": c.phone,
+          "Vergi Dairesi": c.taxOffice,
+          "Vergi No": c.taxNo,
+          "Adres": c.address
+        }));
+      } else if (type === 'services') {
+        filename = "Servis_Kayitlari";
+        exportData = (window.db.services || []).map(s => ({
+          "Tarih": s.date,
+          "Müşteri": getCustNameById(s.custId),
+          "Cihaz": s.model,
+          "Sicil No": s.sicil,
+          "Arıza": s.fault,
+          "Yapılan İşlem": s.action,
+          "Ücret (TL)": s.price
+        }));
+      } else if (type === 'reports') {
+        filename = "Servis_Raporu";
+        const name = document.getElementById('repCust').value.toLowerCase();
+        const start = document.getElementById('repStartDate').value;
+        const end = document.getElementById('repEndDate').value;
+        const action = document.getElementById('repAction').value.toLowerCase();
+
+        exportData = (window.db.services || []).filter(s => {
+          const custName = getCustNameById(s.custId).toLowerCase();
+          return (!name || custName.includes(name)) &&
+                 (!action || s.action.toLowerCase().includes(action)) &&
+                 (!start || s.date >= start) &&
+                 (!end || s.date <= end);
+        }).map(s => ({
+          "Tarih": s.date,
+          "Müşteri": getCustNameById(s.custId),
+          "Cihaz": s.model,
+          "Yapılan İşlem": s.action,
+          "Ücret (TL)": s.price
+        }));
+      }
+
+      if (exportData.length === 0) {
+        alert("Aktarılacak veri bulunamadı!");
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sayfa1");
+      XLSX.writeFile(workbook, `${filename}.xlsx`);
+    };
+
+    // Yedekleme İşlemleri
+    window.exportBackup = function() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.db));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
@@ -589,9 +628,9 @@
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
-    }
+    };
 
-    function importBackup(e) {
+    window.importBackup = function(e) {
       const file = e.target.files[0];
       if(!file) return;
       const reader = new FileReader();
@@ -605,7 +644,7 @@
         }
       };
       reader.readAsText(file);
-    }
+    };
   </script>
 </body>
 </html>
