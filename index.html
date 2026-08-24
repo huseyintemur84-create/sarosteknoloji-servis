@@ -9,46 +9,46 @@
   
   <style>
     :root {
-      --primary: #2563eb;   /* GÖRSELDEKİ CANLI MAVİ RENK */
-      --accent: #1d4ed8;    /* KOYUMSU MAVİ */
+      --primary: #2563eb;   /* CANLI MAVİ (BUTONLAR İÇİN) */
+      --accent: #1d4ed8;    
       --bg: #f8fafc;
-      --text: #334155;
-      --warning: #f59e0b;  /* SARI / TURUNCU */
-      --danger: #dc2626;   /* KIRMIZI SİLME BUTONU */
+      --text: #1e293b;
+      --sidebar-bg: #ffffff; /* MAVİ KALDIRILDI, TEMİZ BEYAZ KULLANILDI */
+      --sidebar-text: #334155;
+      --warning: #f59e0b;  
+      --danger: #dc2626;   
     }
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
     body { display: flex; flex-direction: row; min-height: 100vh; background: var(--bg); color: var(--text); }
     
-    /* Üst Mobil Bar (Masaüstünde Gizli) */
+    /* Üst Mobil Bar */
     .mobile-header {
       display: none;
-      background: var(--primary) !important;
-      color: white;
+      background: #ffffff !important;
+      color: var(--text);
       padding: 10px 15px;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
       z-index: 1000;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    /* MOBİL LOGO (KIRPILMIŞ / BEYAZLIKSIZ) */
+    /* MOBİL LOGO (BÜYÜTÜLMÜŞ VE BEYAZLIĞI KALDIRILMIŞ) */
     .mobile-logo { 
-      height: 45px; 
-      width: 140px;
-      background: #ffffff; 
-      padding: 0; 
-      margin: 0;
-      border-radius: 4px; 
-      object-fit: cover !important; 
-      object-position: center !important;
+      height: 55px; 
+      width: auto;
+      max-width: 180px;
+      object-fit: contain !important; 
+      mix-blend-mode: multiply; /* Arka plandaki beyazlığı yok eder */
       display: block;
     }
 
     .menu-toggle {
-      background: #ffffff !important;
-      color: var(--primary) !important;
+      background: var(--primary) !important;
+      color: #ffffff !important;
       border: none;
       padding: 8px 14px;
       border-radius: 4px;
@@ -57,53 +57,62 @@
       font-weight: bold;
     }
 
-    /* Sol Menü (Masaüstü) */
+    /* Sol Menü (Masaüstü - Mavi Renk Silindi) */
     .sidebar { 
       width: 280px; 
-      background: var(--primary) !important; 
-      color: white; 
+      background: var(--sidebar-bg) !important; 
+      color: var(--sidebar-text); 
       display: flex; 
       flex-direction: column; 
       padding: 20px 0; 
       flex-shrink: 0; 
+      border-right: 1px solid #e2e8f0;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.02);
     }
 
     .sidebar-header { 
       padding: 10px 15px 20px 15px; 
-      border-bottom: 1px solid rgba(255,255,255,0.2); 
+      border-bottom: 1px solid #f1f5f9; 
       text-align: center; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     
-    /* MASAÜSTÜ LOGO (KENAR BEYAZLIKLARI KIRPILMIŞ) */
+    /* MASAÜSTÜ LOGO (BÜYÜTÜLDÜ VE BEYAZ KENARLIKLAR SİLİNDİ) */
     .sidebar-logo { 
-      width: 100%; 
-      max-width: 220px; 
-      height: 75px; 
-      background: #ffffff; 
-      padding: 0; 
-      margin: 0 auto;
-      border-radius: 6px; 
-      object-fit: cover !important; 
-      object-position: center !important; 
+      width: 90%; 
+      max-width: 240px; 
+      height: auto; 
+      max-height: 110px; 
+      object-fit: contain !important; 
+      mix-blend-mode: multiply; /* Görselin etrafındaki beyazlığı transparan yapar */
       display: block; 
+      margin: 0 auto;
     }
 
-    /* Menü Elemanları (Maviye Zorlanmış) */
+    /* Menü Elemanları */
     .menu-item { 
-      padding: 15px 20px; 
+      padding: 15px 25px; 
       cursor: pointer; 
       display: flex; 
       align-items: center; 
       gap: 10px; 
       transition: 0.2s; 
-      font-weight: 500; 
+      font-weight: 600; 
       background: transparent !important; 
-      color: #ffffff !important; 
+      color: #475569 !important; 
     }
 
-    .menu-item:hover, .menu-item.active { 
-      background: rgba(0,0,0,0.2) !important; 
-      border-left: 4px solid #ffffff; 
+    .menu-item:hover {
+      background: #f1f5f9 !important;
+      color: var(--primary) !important;
+    }
+
+    .menu-item.active { 
+      background: #eff6ff !important; 
+      color: var(--primary) !important;
+      border-left: 4px solid var(--primary); 
     }
 
     /* Ana İçerik */
@@ -124,7 +133,7 @@
     th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
     th { background: #f1f5f9; }
     
-    /* Buton Renkleri (Maviye Zorlanmış) */
+    /* Butonlar */
     .btn, button[type="submit"] { 
       padding: 8px 16px; 
       border: none; 
@@ -151,11 +160,11 @@
         display: none;
         width: 100%;
         padding: 0;
-        background: var(--primary) !important;
+        background: #ffffff !important;
       }
       .sidebar.open { display: flex !important; }
       .sidebar-header { display: none; }
-      .menu-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; }
+      .menu-item { border-bottom: 1px solid #f1f5f9; padding: 12px 20px; }
       .main-content { padding: 12px; }
     }
   </style>
