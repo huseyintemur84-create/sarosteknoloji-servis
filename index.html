@@ -9,11 +9,11 @@
   
   <style>
     :root {
-      --primary: #2563eb;   /* CANLI MAVİ (BUTONLAR İÇİN) */
+      --primary: #2563eb;   
       --accent: #1d4ed8;    
       --bg: #f8fafc;
       --text: #1e293b;
-      --sidebar-bg: #ffffff; /* MAVİ KALDIRILDI, TEMİZ BEYAZ KULLANILDI */
+      --sidebar-bg: #ffffff; /* Sol menü MAVİSİ SİLİNDİ (Temiz Beyaz Yapıldı) */
       --sidebar-text: #334155;
       --warning: #f59e0b;  
       --danger: #dc2626;   
@@ -36,13 +36,14 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    /* MOBİL LOGO (BÜYÜTÜLMÜŞ VE BEYAZLIĞI KALDIRILMIŞ) */
+    /* MOBİL LOGO (BÜYÜTÜLMÜŞ VE BEYAZLIKLARI SİLİNMİŞ) */
     .mobile-logo { 
-      height: 55px; 
+      height: 60px; 
       width: auto;
-      max-width: 180px;
+      max-width: 200px;
       object-fit: contain !important; 
-      mix-blend-mode: multiply; /* Arka plandaki beyazlığı yok eder */
+      mix-blend-mode: multiply; 
+      filter: contrast(110%);
       display: block;
     }
 
@@ -71,22 +72,24 @@
     }
 
     .sidebar-header { 
-      padding: 10px 15px 20px 15px; 
+      padding: 10px 15px 25px 15px; 
       border-bottom: 1px solid #f1f5f9; 
       text-align: center; 
       display: flex;
       justify-content: center;
       align-items: center;
+      background: #ffffff;
     }
     
-    /* MASAÜSTÜ LOGO (BÜYÜTÜLDÜ VE BEYAZ KENARLIKLAR SİLİNDİ) */
+    /* MASAÜSTÜ LOGO (DAHA BÜYÜK VE BEYAZ ARKA PLANI ŞEFFAF YAPILMIŞ) */
     .sidebar-logo { 
-      width: 90%; 
-      max-width: 240px; 
+      width: 100%; 
+      max-width: 250px; 
       height: auto; 
-      max-height: 110px; 
+      max-height: 140px; 
       object-fit: contain !important; 
-      mix-blend-mode: multiply; /* Görselin etrafındaki beyazlığı transparan yapar */
+      mix-blend-mode: multiply; /* Görselin etrafındaki beyazlığı yok eder */
+      filter: contrast(110%);
       display: block; 
       margin: 0 auto;
     }
@@ -365,13 +368,11 @@
 
     window.db = { customers: [], services: [], todos: [] };
 
-    // Bulut Veritabanı Kaydı
     function saveDB() {
       set(ref(database, 'saros_data'), window.db);
       renderAll();
     }
 
-    // Anlık Bulut Dinleme
     onValue(ref(database, 'saros_data'), (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -386,7 +387,6 @@
       renderAll();
     });
 
-    // Menü Kontrolleri
     window.toggleMenu = function() {
       var sidebar = document.getElementById('sidebar');
       if (sidebar) sidebar.classList.toggle('open');
@@ -402,7 +402,6 @@
       if (sidebar) sidebar.classList.remove('open');
     };
 
-    // Müşteri İsim-ID Dönüştürücüler
     function getCustIdByName(name) {
       const c = (window.db.customers || []).find(item => item.name === name);
       return c ? c.id : name;
@@ -413,7 +412,6 @@
       return c ? c.name : id;
     }
 
-    // Müşteri İşlemleri
     window.saveCustomer = function(e) {
       e.preventDefault();
       const id = document.getElementById('custId').value || Date.now().toString();
@@ -456,7 +454,6 @@
       }
     };
 
-    // Servis İşlemleri
     window.saveService = function(e) {
       e.preventDefault();
       const id = document.getElementById('servId').value || Date.now().toString();
@@ -504,7 +501,6 @@
       }
     };
 
-    // Yapılacaklar İşlemleri
     window.saveTodo = function(e) {
       e.preventDefault();
       const id = document.getElementById('todoId').value || Date.now().toString();
@@ -546,13 +542,10 @@
       }
     };
 
-    // Ekran Yenileme
     function renderAll() {
-      // Datalist Güncelleme
       const customerOptions = (window.db.customers || []).map(c => `<option value="${c.name}">`).join('');
       document.getElementById('customerListOptions').innerHTML = customerOptions;
 
-      // Müşteri Tablosu
       document.getElementById('customerTableBody').innerHTML = (window.db.customers || []).map(c => `
         <tr>
           <td>${c.name}</td>
@@ -566,7 +559,6 @@
         </tr>
       `).join('');
 
-      // Servis Tablosu
       document.getElementById('serviceTableBody').innerHTML = (window.db.services || []).map(s => {
         const custName = getCustNameById(s.custId);
         return `
@@ -585,7 +577,6 @@
         `;
       }).join('');
 
-      // Görev Tablosu
       const sortedTodos = [...(window.db.todos || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
       document.getElementById('todoTableBody').innerHTML = sortedTodos.map(t => {
         const custName = t.custId ? getCustNameById(t.custId) : '-';
@@ -606,7 +597,6 @@
       window.filterReports();
     }
 
-    // Rapor Filtreleme
     window.filterReports = function() {
       const name = document.getElementById('repCust').value.toLowerCase();
       const start = document.getElementById('repStartDate').value;
@@ -638,7 +628,6 @@
       }).join('');
     };
 
-    // Excel Dışa Aktarımı
     window.exportDataToExcel = function(type) {
       let exportData = [];
       let filename = "";
@@ -696,7 +685,6 @@
       XLSX.writeFile(workbook, `${filename}.xlsx`);
     };
 
-    // Yedekleme İşlemleri
     window.exportBackup = function() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.db));
       const downloadAnchor = document.createElement('a');
