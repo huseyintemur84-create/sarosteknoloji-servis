@@ -184,7 +184,7 @@
 
     /* Buton Renk Varyasyonları */
     button.btn-warning { background-color: var(--warning); color: white; }
-    button.btn-danger { background-color: var(--danger); color: white; }
+    button.btn-danger { background-color: var(--primary); color: white; } /* Sil butonu artık Mavi */
     button.btn-excel { background-color: var(--success); color: white; }
     .actions { display: flex; gap: 6px; }
 
@@ -423,7 +423,7 @@
     window.db = { customers: [], services: [], todos: [] };
 
     // Şifre Giriş Kontrolü
-    const APP_PASSWORD = "saros123"; // Buradan şifreyi değiştirebilirsiniz
+    const APP_PASSWORD = "saros123";
     window.checkPassword = function() {
       const input = document.getElementById('passInput').value;
       if (input === APP_PASSWORD) {
@@ -434,7 +434,7 @@
       }
     };
 
-    // Oturum Kontrolü (Sayfa yenilendiğinde tekrar sormaz)
+    // Oturum Kontrolü
     if (sessionStorage.getItem('authenticated') === 'true') {
       document.getElementById('loginModal').style.display = 'none';
     }
@@ -677,7 +677,7 @@
         `;
       }).join('');
 
-      // Yapılacaklar Tablosu (Sıralamalı - Öncelik Alanı Kaldırıldı)
+      // Yapılacaklar Tablosu (Sıralamalı)
       let sortedTodos = [...(window.db.todos || [])];
       sortedTodos.sort((a, b) => {
         const d1 = new Date(a.date), d2 = new Date(b.date);
