@@ -9,13 +9,15 @@
   
   <style>
     :root {
-      --primary: #2563eb;   
+      --primary: #2563eb;    
       --accent: #1d4ed8;    
       --bg: #f8fafc;
       --text: #1e293b;
       --sidebar-bg: #ffffff; 
       --sidebar-text: #334155;
       --warning: #f59e0b;  
+      --danger: #ef4444;
+      --success: #10b981;
     }
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
     body { display: flex; flex-direction: row; min-height: 100vh; background: var(--bg); color: var(--text); }
@@ -23,7 +25,7 @@
     /* Üst Mobil Bar */
     .mobile-header {
       display: none;
-      background: #ffffff !important;
+      background: #ffffff;
       color: var(--text);
       padding: 10px 15px;
       justify-content: space-between;
@@ -36,30 +38,28 @@
     }
 
     .mobile-logo { 
-      height: 60px; 
+      height: 50px; 
       width: auto;
-      max-width: 200px;
-      object-fit: contain !important; 
-      mix-blend-mode: multiply; 
-      filter: contrast(110%);
+      max-width: 180px;
+      object-fit: contain; 
       display: block;
     }
 
     .menu-toggle {
-      background: var(--primary) !important;
-      color: #ffffff !important;
+      background: var(--primary);
+      color: #ffffff;
       border: none;
       padding: 8px 14px;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 15px;
-      font-weight: bold;
+      font-size: 14px;
+      font-weight: 600;
     }
 
     /* Sol Menü */
     .sidebar { 
       width: 280px; 
-      background: var(--sidebar-bg) !important; 
+      background: var(--sidebar-bg); 
       color: var(--sidebar-text); 
       display: flex; 
       flex-direction: column; 
@@ -67,6 +67,7 @@
       flex-shrink: 0; 
       border-right: 1px solid #e2e8f0;
       box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+      transition: all 0.3s ease;
     }
 
     .sidebar-header { 
@@ -81,36 +82,33 @@
     
     .sidebar-logo { 
       width: 100%; 
-      max-width: 250px; 
+      max-width: 220px; 
       height: auto; 
-      max-height: 140px; 
-      object-fit: contain !important; 
-      mix-blend-mode: multiply; 
-      filter: contrast(110%);
+      max-height: 120px; 
+      object-fit: contain; 
       display: block; 
       margin: 0 auto;
     }
 
     .menu-item { 
-      padding: 15px 25px; 
+      padding: 14px 25px; 
       cursor: pointer; 
       display: flex; 
       align-items: center; 
       gap: 10px; 
       transition: 0.2s; 
       font-weight: 600; 
-      background: transparent !important; 
-      color: #475569 !important; 
+      color: #475569; 
     }
 
     .menu-item:hover {
-      background: #f1f5f9 !important;
-      color: var(--primary) !important;
+      background: #f1f5f9;
+      color: var(--primary);
     }
 
     .menu-item.active { 
-      background: #eff6ff !important; 
-      color: var(--primary) !important;
+      background: #eff6ff; 
+      color: var(--primary);
       border-left: 4px solid var(--primary); 
     }
 
@@ -118,38 +116,43 @@
     .main-content { flex: 1; padding: 20px; overflow-y: auto; width: 100%; }
     .section { display: none; }
     .section.active { display: block; }
-    .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e2e8f0; }
     
     /* Form Elemanları */
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group label { font-size: 13px; font-weight: 600; }
-    .form-group input, .form-group select, .form-group textarea { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; width: 100%; }
-    
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 13px; font-weight: 600; color: #334155; }
+    .form-group input, .form-group select, .form-group textarea { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; width: 100%; outline: none; transition: border-color 0.2s; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+
     /* Tablo */
     .table-container { width: 100%; overflow-x: auto; margin-top: 15px; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 600px; }
-    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
-    th { background: #f1f5f9; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 650px; }
+    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; font-weight: 600; color: #475569; }
     
     /* Standart Butonlar */
     .btn, button[type="submit"] { 
-      padding: 8px 16px; 
+      padding: 9px 18px; 
       border: none; 
-      border-radius: 4px; 
+      border-radius: 6px; 
       cursor: pointer; 
       font-weight: 600; 
-      background-color: var(--primary) !important; 
-      color: #ffffff !important; 
-      transition: 0.2s; 
+      background-color: var(--primary); 
+      color: #ffffff; 
+      transition: opacity 0.2s; 
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
     .btn:hover { opacity: 0.9; }
 
-    /* Özel Buton Renkleri (CSS Çakışması Engellendi) */
-    button.btn-warning { background-color: var(--warning) !important; color: white !important; }
-    button.btn-danger { background-color: var(--primary) !important; color: white !important; } /* SİL BUTONLARI YEDEK İNDİR İLE TAM AYNI MAVİ */
-    button.btn-excel { background-color: #10b981 !important; color: white !important; }
-    .actions { display: flex; gap: 5px; }
+    /* Buton Renk Varyasyonları */
+    button.btn-warning { background-color: var(--warning); color: white; }
+    button.btn-danger { background-color: var(--danger); color: white; }
+    button.btn-excel { background-color: var(--success); color: white; }
+    .actions { display: flex; gap: 6px; }
 
     @media (max-width: 768px) {
       body { flex-direction: column; }
@@ -158,11 +161,11 @@
         display: none;
         width: 100%;
         padding: 0;
-        background: #ffffff !important;
+        background: #ffffff;
       }
-      .sidebar.open { display: flex !important; }
+      .sidebar.open { display: flex; }
       .sidebar-header { display: none; }
-      .menu-item { border-bottom: 1px solid #f1f5f9; padding: 12px 20px; }
+      .menu-item { border-bottom: 1px solid #f1f5f9; padding: 14px 20px; }
       .main-content { padding: 12px; }
     }
   </style>
@@ -363,6 +366,17 @@
 
     window.db = { customers: [], services: [], todos: [] };
 
+    // XSS Koruması için yardımcı metin dönüştürücü
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
     function saveDB() {
       set(ref(database, 'saros_data'), window.db);
       renderAll();
@@ -383,7 +397,7 @@
     });
 
     window.toggleMenu = function() {
-      var sidebar = document.getElementById('sidebar');
+      const sidebar = document.getElementById('sidebar');
       if (sidebar) sidebar.classList.toggle('open');
     };
 
@@ -412,11 +426,11 @@
       const id = document.getElementById('custId').value || Date.now().toString();
       const custData = {
         id,
-        name: document.getElementById('custName').value,
-        phone: document.getElementById('custPhone').value,
-        taxOffice: document.getElementById('custTaxOffice').value,
-        taxNo: document.getElementById('custTaxNo').value,
-        address: document.getElementById('custAddress').value
+        name: document.getElementById('custName').value.trim(),
+        phone: document.getElementById('custPhone').value.trim(),
+        taxOffice: document.getElementById('custTaxOffice').value.trim(),
+        taxNo: document.getElementById('custTaxNo').value.trim(),
+        address: document.getElementById('custAddress').value.trim()
       };
       
       const idx = window.db.customers.findIndex(c => c.id === id);
@@ -452,16 +466,16 @@
     window.saveService = function(e) {
       e.preventDefault();
       const id = document.getElementById('servId').value || Date.now().toString();
-      const custNameInput = document.getElementById('servCustInput').value;
+      const custNameInput = document.getElementById('servCustInput').value.trim();
       const servData = {
         id,
         custId: getCustIdByName(custNameInput),
         date: document.getElementById('servDate').value,
-        model: document.getElementById('servModel').value,
-        sicil: document.getElementById('servSicil').value,
+        model: document.getElementById('servModel').value.trim(),
+        sicil: document.getElementById('servSicil').value.trim(),
         price: document.getElementById('servPrice').value,
-        fault: document.getElementById('servFault').value,
-        action: document.getElementById('servAction').value
+        fault: document.getElementById('servFault').value.trim(),
+        action: document.getElementById('servAction').value.trim()
       };
 
       const idx = window.db.services.findIndex(s => s.id === id);
@@ -499,10 +513,10 @@
     window.saveTodo = function(e) {
       e.preventDefault();
       const id = document.getElementById('todoId').value || Date.now().toString();
-      const custNameInput = document.getElementById('todoCustInput').value;
+      const custNameInput = document.getElementById('todoCustInput').value.trim();
       const todoData = {
         id,
-        task: document.getElementById('todoTask').value,
+        task: document.getElementById('todoTask').value.trim(),
         custId: custNameInput ? getCustIdByName(custNameInput) : '',
         date: document.getElementById('todoDate').value,
         priority: document.getElementById('todoPriority').value
@@ -538,15 +552,15 @@
     };
 
     function renderAll() {
-      const customerOptions = (window.db.customers || []).map(c => `<option value="${c.name}">`).join('');
+      const customerOptions = (window.db.customers || []).map(c => `<option value="${escapeHtml(c.name)}">`).join('');
       document.getElementById('customerListOptions').innerHTML = customerOptions;
 
       document.getElementById('customerTableBody').innerHTML = (window.db.customers || []).map(c => `
         <tr>
-          <td>${c.name}</td>
-          <td>${c.phone}</td>
-          <td>${c.taxOffice} / ${c.taxNo}</td>
-          <td>${c.address}</td>
+          <td>${escapeHtml(c.name)}</td>
+          <td>${escapeHtml(c.phone)}</td>
+          <td>${escapeHtml(c.taxOffice)} / ${escapeHtml(c.taxNo)}</td>
+          <td>${escapeHtml(c.address)}</td>
           <td class="actions">
             <button class="btn btn-warning" onclick="editCustomer('${c.id}')">Düzenle</button>
             <button class="btn btn-danger" onclick="deleteCustomer('${c.id}')">Sil</button>
@@ -558,12 +572,12 @@
         const custName = getCustNameById(s.custId);
         return `
           <tr>
-            <td>${s.date}</td>
-            <td>${custName || 'Bilinmeyen Müşteri'}</td>
-            <td>${s.model} (${s.sicil})</td>
-            <td>${s.fault}</td>
-            <td>${s.action}</td>
-            <td>${s.price} TL</td>
+            <td>${escapeHtml(s.date)}</td>
+            <td>${escapeHtml(custName || 'Bilinmeyen Müşteri')}</td>
+            <td>${escapeHtml(s.model)} (${escapeHtml(s.sicil)})</td>
+            <td>${escapeHtml(s.fault)}</td>
+            <td>${escapeHtml(s.action)}</td>
+            <td>${escapeHtml(s.price)} TL</td>
             <td class="actions">
               <button class="btn btn-warning" onclick="editService('${s.id}')">Düzenle</button>
               <button class="btn btn-danger" onclick="deleteService('${s.id}')">Sil</button>
@@ -577,10 +591,10 @@
         const custName = t.custId ? getCustNameById(t.custId) : '-';
         return `
           <tr>
-            <td>${t.date}</td>
-            <td>${t.task}</td>
-            <td>${custName}</td>
-            <td>${t.priority}</td>
+            <td>${escapeHtml(t.date)}</td>
+            <td>${escapeHtml(t.task)}</td>
+            <td>${escapeHtml(custName)}</td>
+            <td>${escapeHtml(t.priority)}</td>
             <td class="actions">
               <button class="btn btn-warning" onclick="editTodo('${t.id}')">Düzenle</button>
               <button class="btn btn-danger" onclick="deleteTodo('${t.id}')">Tamamlandı / Sil</button>
@@ -613,11 +627,11 @@
         const custName = getCustNameById(s.custId);
         return `
           <tr>
-            <td>${s.date}</td>
-            <td>${custName || '-'}</td>
-            <td>${s.model}</td>
-            <td>${s.action}</td>
-            <td>${s.price} TL</td>
+            <td>${escapeHtml(s.date)}</td>
+            <td>${escapeHtml(custName || '-')}</td>
+            <td>${escapeHtml(s.model)}</td>
+            <td>${escapeHtml(s.action)}</td>
+            <td>${escapeHtml(s.price)} TL</td>
           </tr>
         `;
       }).join('');
@@ -681,7 +695,7 @@
     };
 
     window.exportBackup = function() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.db));
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.db, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
       downloadAnchor.setAttribute("download", `Saros_Teknoloji_Yedek_${new Date().toISOString().slice(0,10)}.json`);
