@@ -16,7 +16,6 @@
       --sidebar-bg: #ffffff; 
       --sidebar-text: #334155;
       --warning: #f59e0b;  
-      --danger: #ef4444;
       --success: #10b981;
     }
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
@@ -184,7 +183,7 @@
 
     /* Buton Renk Varyasyonları */
     button.btn-warning { background-color: var(--warning); color: white; }
-    button.btn-danger { background-color: var(--primary); color: white; } /* Sil butonu artık Mavi */
+    button.btn-blue { background-color: #2563eb; color: white; } /* Sil butonları için özel Mavi sınıf */
     button.btn-excel { background-color: var(--success); color: white; }
     .actions { display: flex; gap: 6px; }
 
@@ -647,7 +646,7 @@
           <td>${escapeHtml(c.address)}</td>
           <td class="actions">
             <button class="btn btn-warning" onclick="editCustomer('${c.id}')">Düzenle</button>
-            <button class="btn btn-danger" onclick="deleteCustomer('${c.id}')">Sil</button>
+            <button class="btn btn-blue" onclick="deleteCustomer('${c.id}')">Sil</button>
           </td>
         </tr>
       `).join('');
@@ -671,7 +670,7 @@
             <td>${escapeHtml(s.price)} TL</td>
             <td class="actions">
               <button class="btn btn-warning" onclick="editService('${s.id}')">Düzenle</button>
-              <button class="btn btn-danger" onclick="deleteService('${s.id}')">Sil</button>
+              <button class="btn btn-blue" onclick="deleteService('${s.id}')">Sil</button>
             </td>
           </tr>
         `;
@@ -693,7 +692,7 @@
             <td>${escapeHtml(custName)}</td>
             <td class="actions">
               <button class="btn btn-warning" onclick="editTodo('${t.id}')">Düzenle</button>
-              <button class="btn btn-danger" onclick="deleteTodo('${t.id}')">Tamamlandı / Sil</button>
+              <button class="btn btn-blue" onclick="deleteTodo('${t.id}')">Tamamlandı / Sil</button>
             </td>
           </tr>
         `;
