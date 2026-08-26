@@ -427,6 +427,7 @@
                 <th class="sortable" onclick="toggleSort('reports')">Tarih ↕</th>
                 <th>Müşteri</th>
                 <th>Cihaz</th>
+                <th>Sicil No</th>
                 <th>Yapılan İşlem</th>
                 <th>Ücret</th>
               </tr>
@@ -792,6 +793,7 @@
             <td>${escapeHtml(s.date)}</td>
             <td>${escapeHtml(custName || '-')}</td>
             <td>${escapeHtml(s.model)}</td>
+            <td>${escapeHtml(s.sicil || '-')}</td>
             <td>${escapeHtml(s.action)}</td>
             <td>${escapeHtml(s.price)} TL</td>
           </tr>
@@ -840,6 +842,7 @@
           "Tarih": s.date,
           "Müşteri": getCustNameById(s.custId),
           "Cihaz": s.model,
+          "Sicil No": s.sicil,
           "Yapılan İşlem": s.action,
           "Ücret (TL)": s.price
         }));
