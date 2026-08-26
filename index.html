@@ -9,15 +9,19 @@
   
   <style>
     :root {
-      --primary: #2563eb;    
-      --accent: #1d4ed8;    
-      --bg: #f8fafc;
-      --text: #1e293b;
-      --sidebar-bg: #ffffff; 
-      --sidebar-text: #334155;
-      --warning: #f59e0b;  
+      --primary: #3b82f6;    
+      --accent: #2563eb;    
+      --bg: #0f172a;           /* Koyu Arka Plan */
+      --card-bg: #1e293b;      /* Kart Koyu Arka Planı */
+      --border-color: #334155; /* Koyu Kenarlık */
+      --text: #f8fafc;         /* Açık Renk Yazı */
+      --text-muted: #94a3b8;   /* İkincil Yazı Renk */
+      --sidebar-bg: #1e293b;  
+      --sidebar-text: #e2e8f0;
+      --warning: #f59e0b;    
       --success: #10b981;
     }
+
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
     body { display: flex; flex-direction: row; min-height: 100vh; background: var(--bg); color: var(--text); }
     
@@ -25,53 +29,56 @@
     #loginModal {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(2, 6, 23, 0.9);
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 9999;
     }
     .login-box {
-      background: white;
+      background: var(--card-bg);
       padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      width: 100%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      width: 90%;
       max-width: 360px;
       text-align: center;
+      border: 1px solid var(--border-color);
     }
     .login-box h2 { margin-bottom: 8px; color: var(--text); font-size: 20px; }
-    .login-box p { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+    .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
     .login-box input {
       width: 100%;
       padding: 10px;
       margin-bottom: 15px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       font-size: 16px;
       text-align: center;
+      background: #0f172a;
+      color: var(--text);
     }
     .login-box button { width: 100%; padding: 10px; font-size: 15px; }
 
     /* Üst Mobil Bar */
     .mobile-header {
       display: none;
-      background: #ffffff;
+      background: var(--card-bg);
       color: var(--text);
       padding: 10px 15px;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
-      z-index: 1000;
-      border-bottom: 1px solid #e2e8f0;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      z-index: 999;
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
     .mobile-logo { 
-      height: 50px; 
+      height: 40px; 
       width: auto;
-      max-width: 180px;
+      max-width: 160px;
       object-fit: contain; 
       display: block;
     }
@@ -87,7 +94,7 @@
       font-weight: 600;
     }
 
-    /* Sol Menü */
+    /* Sol Menü (Desktop & Mobil Yandan Açılır Sidebar) */
     .sidebar { 
       width: 280px; 
       background: var(--sidebar-bg); 
@@ -96,29 +103,39 @@
       flex-direction: column; 
       padding: 20px 0; 
       flex-shrink: 0; 
-      border-right: 1px solid #e2e8f0;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.02);
-      transition: all 0.3s ease;
+      border-right: 1px solid var(--border-color);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease-in-out;
+      z-index: 1001;
     }
 
     .sidebar-header { 
       padding: 10px 15px 25px 15px; 
-      border-bottom: 1px solid #f1f5f9; 
+      border-bottom: 1px solid var(--border-color); 
       text-align: center; 
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      background: #ffffff;
+      background: var(--sidebar-bg);
     }
     
     .sidebar-logo { 
       width: 100%; 
-      max-width: 220px; 
+      max-width: 180px; 
       height: auto; 
-      max-height: 120px; 
+      max-height: 100px; 
       object-fit: contain; 
       display: block; 
       margin: 0 auto;
+    }
+
+    .sidebar-close-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 24px;
+      cursor: pointer;
     }
 
     .menu-item { 
@@ -129,40 +146,62 @@
       gap: 10px; 
       transition: 0.2s; 
       font-weight: 600; 
-      color: #475569; 
+      color: var(--text-muted); 
     }
 
     .menu-item:hover {
-      background: #f1f5f9;
-      color: var(--primary);
+      background: #334155;
+      color: var(--text);
     }
 
     .menu-item.active { 
-      background: #eff6ff; 
-      color: var(--primary);
+      background: #1e3a8a; 
+      color: #ffffff;
       border-left: 4px solid var(--primary); 
     }
+
+    /* Arka Plan Karartması (Overlay - Mobil Menü Açılınca) */
+    .menu-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 1000;
+      transition: opacity 0.3s ease;
+    }
+    .menu-overlay.open { display: block; }
 
     /* Ana İçerik */
     .main-content { flex: 1; padding: 20px; overflow-y: auto; width: 100%; }
     .section { display: none; }
     .section.active { display: block; }
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+    .card { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 20px; border: 1px solid var(--border-color); }
     
     /* Form Elemanları */
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 13px; font-weight: 600; color: #334155; }
-    .form-group input, .form-group select, .form-group textarea { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; width: 100%; outline: none; transition: border-color 0.2s; }
+    .form-group label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+    .form-group input, .form-group select, .form-group textarea { 
+      padding: 9px 12px; 
+      border: 1px solid var(--border-color); 
+      border-radius: 6px; 
+      font-size: 14px; 
+      width: 100%; 
+      outline: none; 
+      background: #0f172a;
+      color: var(--text);
+      transition: border-color 0.2s; 
+    }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
 
-    /* Tablo */
+    /* Tablo Koyu Tema */
     .table-container { width: 100%; overflow-x: auto; margin-top: 15px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 650px; }
-    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #e2e8f0; }
-    th { background: #f8fafc; font-weight: 600; color: #475569; }
+    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-color); }
+    th { background: #0f172a; font-weight: 600; color: var(--text-muted); }
     th.sortable { cursor: pointer; user-select: none; }
-    th.sortable:hover { background: #e2e8f0; color: var(--primary); }
+    th.sortable:hover { background: #334155; color: var(--primary); }
 
     /* Standart Butonlar */
     .btn, button[type="submit"] { 
@@ -183,22 +222,31 @@
 
     /* Buton Renk Varyasyonları */
     button.btn-warning { background-color: var(--warning); color: white; }
-    button.btn-blue { background-color: #2563eb; color: white; } /* Sil butonları için özel Mavi sınıf */
+    button.btn-blue { background-color: #2563eb; color: white; }
     button.btn-excel { background-color: var(--success); color: white; }
     .actions { display: flex; gap: 6px; }
 
+    /* Mobil Stiller */
     @media (max-width: 768px) {
       body { flex-direction: column; }
       .mobile-header { display: flex; }
+      
+      /* Yandan Kayarak Açılan Sol Menü (Off-Canvas Menu) */
       .sidebar {
-        display: none;
-        width: 100%;
-        padding: 0;
-        background: #ffffff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 260px;
+        transform: translateX(-100%); /* Varsayılan gizli duruş */
+        box-shadow: 4px 0 15px rgba(0,0,0,0.5);
       }
-      .sidebar.open { display: flex; }
-      .sidebar-header { display: none; }
-      .menu-item { border-bottom: 1px solid #f1f5f9; padding: 14px 20px; }
+      .sidebar.open {
+        transform: translateX(0); /* Soldan sağa kayarak açılır */
+      }
+      .sidebar-header { display: flex; }
+      .sidebar-close-btn { display: block; }
+      .menu-item { border-bottom: 1px solid var(--border-color); padding: 16px 20px; }
       .main-content { padding: 12px; }
     }
   </style>
@@ -215,16 +263,20 @@
     </div>
   </div>
 
+  <!-- MOBİL MENÜ KARARTMA OVERLAY -->
+  <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+
   <!-- MOBİL BAŞLIK VE MENÜ BUTONU -->
   <div class="mobile-header">
     <img src="Saros_2.jpg" alt="Saros Teknoloji" class="mobile-logo">
     <button class="menu-toggle" onclick="toggleMenu()">☰ Menü</button>
   </div>
 
-  <!-- SOL MENÜ -->
+  <!-- SOL MENÜ (YANDAN KAYAN) -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <img src="Saros_2.jpg" alt="Saros Teknoloji Logo" class="sidebar-logo">
+      <button class="sidebar-close-btn" onclick="toggleMenu()">✕</button>
     </div>
     <div class="menu-item active" onclick="showSection('customers', event)">Müşteri Kayıtları</div>
     <div class="menu-item" onclick="showSection('services', event)">Servis Kayıtları</div>
@@ -389,7 +441,7 @@
     <div id="settings" class="section">
       <div class="card">
         <h3>Veri Yedekleme ve Geri Yükleme</h3>
-        <p style="margin: 10px 0; font-size:14px; color:#64748b;">Bulut veritabanındaki tüm verileri bilgisayarınıza indirebilir veya yerel yedeğinizi buluta aktarabilirsiniz.</p>
+        <p style="margin: 10px 0; font-size:14px; color:var(--text-muted);">Bulut veritabanındaki tüm verileri bilgisayarınıza indirebilir veya yerel yedeğinizi buluta aktarabilirsiniz.</p>
         <div style="display:flex; gap:15px; margin-top:15px; flex-wrap:wrap;">
           <button class="btn" onclick="exportBackup()">Yedek İndir (JSON)</button>
           <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importBackup(event)">
@@ -479,9 +531,14 @@
       renderAll();
     });
 
+    // Mobil Menü Yandan Açma/Kapama Fonksiyonu
     window.toggleMenu = function() {
       const sidebar = document.getElementById('sidebar');
-      if (sidebar) sidebar.classList.toggle('open');
+      const overlay = document.getElementById('menuOverlay');
+      if (sidebar && overlay) {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+      }
     };
 
     window.showSection = function(id, e) {
@@ -491,7 +548,11 @@
       if (e && e.target) e.target.classList.add('active');
 
       const sidebar = document.getElementById('sidebar');
-      if (sidebar) sidebar.classList.remove('open');
+      const overlay = document.getElementById('menuOverlay');
+      if (sidebar && overlay) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+      }
     };
 
     function getCustIdByName(name) {
