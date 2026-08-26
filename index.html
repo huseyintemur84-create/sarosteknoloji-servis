@@ -22,6 +22,38 @@
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
     body { display: flex; flex-direction: row; min-height: 100vh; background: var(--bg); color: var(--text); }
     
+    /* Şifre Giriş Ekranı Pop-up/Modal */
+    #loginModal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+    .login-box h2 { margin-bottom: 8px; color: var(--text); font-size: 20px; }
+    .login-box p { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+    .login-box input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 16px;
+      text-align: center;
+    }
+    .login-box button { width: 100%; padding: 10px; font-size: 15px; }
+
     /* Üst Mobil Bar */
     .mobile-header {
       display: none;
@@ -130,7 +162,9 @@
     table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 650px; }
     th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #e2e8f0; }
     th { background: #f8fafc; font-weight: 600; color: #475569; }
-    
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { background: #e2e8f0; color: var(--primary); }
+
     /* Standart Butonlar */
     .btn, button[type="submit"] { 
       padding: 9px 18px; 
@@ -171,6 +205,16 @@
   </style>
 </head>
 <body>
+
+  <!-- ŞİFRE GİRİŞ MODALI -->
+  <div id="loginModal">
+    <div class="login-box">
+      <h2>Saros Teknoloji</h2>
+      <p>Lütfen devam etmek için şifrenizi girin.</p>
+      <input type="password" id="passInput" placeholder="Sistem Şifresi" onkeydown="if(event.key === 'Enter') checkPassword()">
+      <button class="btn" onclick="checkPassword()">Giriş Yap</button>
+    </div>
+  </div>
 
   <!-- MOBİL BAŞLIK VE MENÜ BUTONU -->
   <div class="mobile-header">
@@ -259,7 +303,15 @@
         <div class="table-container">
           <table id="serviceTable">
             <thead>
-              <tr><th>Tarih</th><th>Müşteri</th><th>Cihaz / Sicil</th><th>Arıza</th><th>Yapılan İşlem</th><th>Ücret</th><th>İşlemler</th></tr>
+              <tr>
+                <th class="sortable" onclick="toggleSort('services')">Tarih ↕</th>
+                <th>Müşteri</th>
+                <th>Cihaz / Sicil</th>
+                <th>Arıza</th>
+                <th>Yapılan İşlem</th>
+                <th>Ücret</th>
+                <th>İşlemler</th>
+              </tr>
             </thead>
             <tbody id="serviceTableBody"></tbody>
           </table>
@@ -280,13 +332,6 @@
               <input list="customerListOptions" id="todoCustInput" placeholder="Müşteri ara...">
             </div>
             <div class="form-group"><label>Tarih</label><input type="date" id="todoDate" required></div>
-            <div class="form-group"><label>Öncelik</label>
-              <select id="todoPriority">
-                <option value="Düşük">Düşük</option>
-                <option value="Orta">Orta</option>
-                <option value="Yüksek">Yüksek</option>
-              </select>
-            </div>
           </div>
           <button type="submit" class="btn" id="todoBtn">Görev Ekle</button>
         </form>
@@ -297,7 +342,12 @@
         <div class="table-container">
           <table id="todoTable">
             <thead>
-              <tr><th>Tarih</th><th>Görev</th><th>Müşteri</th><th>Öncelik</th><th>İşlemler</th></tr>
+              <tr>
+                <th class="sortable" onclick="toggleSort('todos')">Tarih ↕</th>
+                <th>Görev</th>
+                <th>Müşteri</th>
+                <th>İşlemler</th>
+              </tr>
             </thead>
             <tbody id="todoTableBody"></tbody>
           </table>
@@ -322,7 +372,13 @@
         <div class="table-container">
           <table id="reportTable">
             <thead>
-              <tr><th>Tarih</th><th>Müşteri</th><th>Cihaz</th><th>Yapılan İşlem</th><th>Ücret</th></tr>
+              <tr>
+                <th class="sortable" onclick="toggleSort('reports')">Tarih ↕</th>
+                <th>Müşteri</th>
+                <th>Cihaz</th>
+                <th>Yapılan İşlem</th>
+                <th>Ücret</th>
+              </tr>
             </thead>
             <tbody id="reportTableBody"></tbody>
           </table>
@@ -366,7 +422,35 @@
 
     window.db = { customers: [], services: [], todos: [] };
 
-    // XSS Koruması için yardımcı metin dönüştürücü
+    // Şifre Giriş Kontrolü
+    const APP_PASSWORD = "saros123"; // Buradan şifreyi değiştirebilirsiniz
+    window.checkPassword = function() {
+      const input = document.getElementById('passInput').value;
+      if (input === APP_PASSWORD) {
+        document.getElementById('loginModal').style.display = 'none';
+        sessionStorage.setItem('authenticated', 'true');
+      } else {
+        alert("Hatalı şifre!");
+      }
+    };
+
+    // Oturum Kontrolü (Sayfa yenilendiğinde tekrar sormaz)
+    if (sessionStorage.getItem('authenticated') === 'true') {
+      document.getElementById('loginModal').style.display = 'none';
+    }
+
+    // Sıralama Yönleri (asc: eskiden yeniye, desc: yeniden eskiye)
+    window.sortDirections = {
+      services: 'desc',
+      todos: 'asc',
+      reports: 'desc'
+    };
+
+    window.toggleSort = function(section) {
+      window.sortDirections[section] = window.sortDirections[section] === 'asc' ? 'desc' : 'asc';
+      renderAll();
+    };
+
     function escapeHtml(str) {
       if (!str) return '';
       return String(str)
@@ -518,8 +602,7 @@
         id,
         task: document.getElementById('todoTask').value.trim(),
         custId: custNameInput ? getCustIdByName(custNameInput) : '',
-        date: document.getElementById('todoDate').value,
-        priority: document.getElementById('todoPriority').value
+        date: document.getElementById('todoDate').value
       };
 
       const idx = window.db.todos.findIndex(t => t.id === id);
@@ -539,7 +622,6 @@
       document.getElementById('todoTask').value = t.task;
       document.getElementById('todoCustInput').value = t.custId ? getCustNameById(t.custId) : '';
       document.getElementById('todoDate').value = t.date;
-      document.getElementById('todoPriority').value = t.priority;
       document.getElementById('todoBtn').innerText = 'Görev Güncelle';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -552,9 +634,11 @@
     };
 
     function renderAll() {
+      // Müşteriler Datalist
       const customerOptions = (window.db.customers || []).map(c => `<option value="${escapeHtml(c.name)}">`).join('');
       document.getElementById('customerListOptions').innerHTML = customerOptions;
 
+      // Müşteri Tablosu
       document.getElementById('customerTableBody').innerHTML = (window.db.customers || []).map(c => `
         <tr>
           <td>${escapeHtml(c.name)}</td>
@@ -568,7 +652,14 @@
         </tr>
       `).join('');
 
-      document.getElementById('serviceTableBody').innerHTML = (window.db.services || []).map(s => {
+      // Servis Kayıtları Tablosu (Sıralamalı)
+      let sortedServices = [...(window.db.services || [])];
+      sortedServices.sort((a, b) => {
+        const d1 = new Date(a.date), d2 = new Date(b.date);
+        return window.sortDirections.services === 'asc' ? d1 - d2 : d2 - d1;
+      });
+
+      document.getElementById('serviceTableBody').innerHTML = sortedServices.map(s => {
         const custName = getCustNameById(s.custId);
         return `
           <tr>
@@ -586,7 +677,13 @@
         `;
       }).join('');
 
-      const sortedTodos = [...(window.db.todos || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
+      // Yapılacaklar Tablosu (Sıralamalı - Öncelik Alanı Kaldırıldı)
+      let sortedTodos = [...(window.db.todos || [])];
+      sortedTodos.sort((a, b) => {
+        const d1 = new Date(a.date), d2 = new Date(b.date);
+        return window.sortDirections.todos === 'asc' ? d1 - d2 : d2 - d1;
+      });
+
       document.getElementById('todoTableBody').innerHTML = sortedTodos.map(t => {
         const custName = t.custId ? getCustNameById(t.custId) : '-';
         return `
@@ -594,7 +691,6 @@
             <td>${escapeHtml(t.date)}</td>
             <td>${escapeHtml(t.task)}</td>
             <td>${escapeHtml(custName)}</td>
-            <td>${escapeHtml(t.priority)}</td>
             <td class="actions">
               <button class="btn btn-warning" onclick="editTodo('${t.id}')">Düzenle</button>
               <button class="btn btn-danger" onclick="deleteTodo('${t.id}')">Tamamlandı / Sil</button>
@@ -612,7 +708,7 @@
       const end = document.getElementById('repEndDate').value;
       const action = document.getElementById('repAction').value.toLowerCase();
 
-      const filtered = (window.db.services || []).filter(s => {
+      let filtered = (window.db.services || []).filter(s => {
         const custName = getCustNameById(s.custId).toLowerCase();
         
         const matchName = !name || custName.includes(name);
@@ -621,6 +717,12 @@
         const matchEnd = !end || s.date <= end;
 
         return matchName && matchAction && matchStart && matchEnd;
+      });
+
+      // Raporlar Tablosu Tarih Sıralaması
+      filtered.sort((a, b) => {
+        const d1 = new Date(a.date), d2 = new Date(b.date);
+        return window.sortDirections.reports === 'asc' ? d1 - d2 : d2 - d1;
       });
 
       document.getElementById('reportTableBody').innerHTML = filtered.map(s => {
