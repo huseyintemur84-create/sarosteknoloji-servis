@@ -94,7 +94,7 @@
       font-weight: 600;
     }
 
-    /* Sol Menü (Desktop & Mobil Yandan Açılır Sidebar) */
+    /* Sol Menü */
     .sidebar { 
       width: 280px; 
       background: var(--sidebar-bg); 
@@ -160,7 +160,6 @@
       border-left: 4px solid var(--primary); 
     }
 
-    /* Arka Plan Karartması (Overlay - Mobil Menü Açılınca) */
     .menu-overlay {
       display: none;
       position: fixed;
@@ -195,7 +194,7 @@
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
 
-    /* Tablo Koyu Tema */
+    /* Tablo ve Tarih Sütun Genişletme Stilleri */
     .table-container { width: 100%; overflow-x: auto; margin-top: 15px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 650px; }
     th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-color); }
@@ -203,12 +202,20 @@
     th.sortable { cursor: pointer; user-select: none; }
     th.sortable:hover { background: #334155; color: var(--primary); }
 
+    /* Tarih Sütununun Taşmasını ve Kırılmasını Engelleyen Özel Sınıf */
+    .date-col {
+      white-space: nowrap !important;
+      min-width: 150px !important;
+      width: 150px !important;
+    }
+
     /* Tıklanabilir Tarih Hücresi Stili */
     .clickable-date {
       color: var(--primary);
       cursor: pointer;
       text-decoration: underline;
       font-weight: 600;
+      display: inline-block;
     }
     .clickable-date:hover {
       color: #60a5fa;
@@ -231,7 +238,6 @@
     }
     .btn:hover { opacity: 0.9; }
 
-    /* Buton Renk Varyasyonları */
     button.btn-warning { background-color: var(--warning); color: white; }
     button.btn-blue { background-color: #2563eb; color: white; }
     button.btn-excel { background-color: var(--success); color: white; }
@@ -379,7 +385,7 @@
           <table id="serviceTable">
             <thead>
               <tr>
-                <th class="sortable" onclick="toggleSort('services')">Tarih ↕</th>
+                <th class="sortable date-col" onclick="toggleSort('services')">Tarih ↕</th>
                 <th>Müşteri</th>
                 <th>Cihaz / Sicil</th>
                 <th>Arıza</th>
@@ -418,7 +424,7 @@
           <table id="todoTable">
             <thead>
               <tr>
-                <th class="sortable" onclick="toggleSort('todos')">Tarih ↕</th>
+                <th class="sortable date-col" onclick="toggleSort('todos')">Tarih ↕</th>
                 <th>Görev</th>
                 <th>Müşteri</th>
                 <th>İşlemler</th>
@@ -448,7 +454,7 @@
           <table id="reportTable">
             <thead>
               <tr>
-                <th class="sortable" onclick="toggleSort('reports')">Tarih ↕</th>
+                <th class="sortable date-col" onclick="toggleSort('reports')">Tarih ↕</th>
                 <th>Müşteri</th>
                 <th>Cihaz</th>
                 <th>Sicil No</th>
@@ -769,7 +775,7 @@
         </tr>
       `).join('');
 
-      // Servis Kayıtları Tablosu (Tıklanabilir Tarih eklendi)
+      // Servis Kayıtları Tablosu
       let sortedServices = [...(window.db.services || [])];
       sortedServices.sort((a, b) => {
         const d1 = new Date(a.date), d2 = new Date(b.date);
@@ -780,7 +786,7 @@
         const custName = getCustNameById(s.custId);
         return `
           <tr>
-            <td><span class="clickable-date" onclick="openDateModal('service', '${s.id}', '${s.date}')">${escapeHtml(s.date)} 📅</span></td>
+            <td class="date-col"><span class="clickable-date" onclick="openDateModal('service', '${s.id}', '${s.date}')">${escapeHtml(s.date)} 📅</span></td>
             <td>${escapeHtml(custName || 'Bilinmeyen Müşteri')}</td>
             <td>${escapeHtml(s.model)} (${escapeHtml(s.sicil)})</td>
             <td>${escapeHtml(s.fault)}</td>
@@ -794,7 +800,7 @@
         `;
       }).join('');
 
-      // Yapılacaklar Tablosu (Tıklanabilir Tarih eklendi)
+      // Yapılacaklar Tablosu
       let sortedTodos = [...(window.db.todos || [])];
       sortedTodos.sort((a, b) => {
         const d1 = new Date(a.date), d2 = new Date(b.date);
@@ -805,7 +811,7 @@
         const custName = t.custId ? getCustNameById(t.custId) : '-';
         return `
           <tr>
-            <td><span class="clickable-date" onclick="openDateModal('todo', '${t.id}', '${t.date}')">${escapeHtml(t.date)} 📅</span></td>
+            <td class="date-col"><span class="clickable-date" onclick="openDateModal('todo', '${t.id}', '${t.date}')">${escapeHtml(t.date)} 📅</span></td>
             <td>${escapeHtml(t.task)}</td>
             <td>${escapeHtml(custName)}</td>
             <td class="actions">
@@ -841,12 +847,12 @@
         return window.sortDirections.reports === 'asc' ? d1 - d2 : d2 - d1;
       });
 
-      // Raporlar Tablosu (Tıklanabilir Tarih eklendi)
+      // Raporlar Tablosu
       document.getElementById('reportTableBody').innerHTML = filtered.map(s => {
         const custName = getCustNameById(s.custId);
         return `
           <tr>
-            <td><span class="clickable-date" onclick="openDateModal('service', '${s.id}', '${s.date}')">${escapeHtml(s.date)} 📅</span></td>
+            <td class="date-col"><span class="clickable-date" onclick="openDateModal('service', '${s.id}', '${s.date}')">${escapeHtml(s.date)} 📅</span></td>
             <td>${escapeHtml(custName || '-')}</td>
             <td>${escapeHtml(s.model)}</td>
             <td>${escapeHtml(s.sicil || '-')}</td>
