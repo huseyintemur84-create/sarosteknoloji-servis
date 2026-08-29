@@ -26,7 +26,7 @@
     body { display: flex; flex-direction: row; min-height: 100vh; background: var(--bg); color: var(--text); }
     
     /* Şifre Giriş Ekranı Pop-up/Modal */
-    #loginModal {
+    #loginModal, #datePickerModal {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(2, 6, 23, 0.9);
@@ -35,9 +35,9 @@
       align-items: center;
       z-index: 9999;
     }
-    .login-box {
+    .modal-box {
       background: var(--card-bg);
-      padding: 30px;
+      padding: 25px;
       border-radius: 12px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
       width: 90%;
@@ -45,9 +45,9 @@
       text-align: center;
       border: 1px solid var(--border-color);
     }
-    .login-box h2 { margin-bottom: 8px; color: var(--text); font-size: 20px; }
-    .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
-    .login-box input {
+    .modal-box h2, .modal-box h3 { margin-bottom: 8px; color: var(--text); font-size: 20px; }
+    .modal-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+    .modal-box input {
       width: 100%;
       padding: 10px;
       margin-bottom: 15px;
@@ -58,7 +58,7 @@
       background: #0f172a;
       color: var(--text);
     }
-    .login-box button { width: 100%; padding: 10px; font-size: 15px; }
+    .modal-box button { width: 100%; padding: 10px; font-size: 15px; margin-top: 5px; }
 
     /* Üst Mobil Bar */
     .mobile-header {
@@ -203,6 +203,17 @@
     th.sortable { cursor: pointer; user-select: none; }
     th.sortable:hover { background: #334155; color: var(--primary); }
 
+    /* Tıklanabilir Tarih Hücresi Stili */
+    .clickable-date {
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+    .clickable-date:hover {
+      color: #60a5fa;
+    }
+
     /* Standart Butonlar */
     .btn, button[type="submit"] { 
       padding: 9px 18px; 
@@ -224,6 +235,7 @@
     button.btn-warning { background-color: var(--warning); color: white; }
     button.btn-blue { background-color: #2563eb; color: white; }
     button.btn-excel { background-color: var(--success); color: white; }
+    button.btn-secondary { background-color: #475569; color: white; }
     .actions { display: flex; gap: 6px; }
 
     /* Mobil Stiller */
@@ -231,18 +243,17 @@
       body { flex-direction: column; }
       .mobile-header { display: flex; }
       
-      /* Yandan Kayarak Açılan Sol Menü (Off-Canvas Menu) */
       .sidebar {
         position: fixed;
         top: 0;
         left: 0;
         height: 100vh;
         width: 260px;
-        transform: translateX(-100%); /* Varsayılan gizli duruş */
+        transform: translateX(-100%);
         box-shadow: 4px 0 15px rgba(0,0,0,0.5);
       }
       .sidebar.open {
-        transform: translateX(0); /* Soldan sağa kayarak açılır */
+        transform: translateX(0);
       }
       .sidebar-header { display: flex; }
       .sidebar-close-btn { display: block; }
@@ -255,11 +266,24 @@
 
   <!-- ŞİFRE GİRİŞ MODALI -->
   <div id="loginModal">
-    <div class="login-box">
+    <div class="modal-box">
       <h2>Saros Teknoloji</h2>
       <p>Lütfen devam etmek için şifrenizi girin.</p>
       <input type="password" id="passInput" placeholder="Sistem Şifresi" onkeydown="if(event.key === 'Enter') checkPassword()">
       <button class="btn" onclick="checkPassword()">Giriş Yap</button>
+    </div>
+  </div>
+
+  <!-- TARİH DETAY/GÜNCELLEME MODALI -->
+  <div id="datePickerModal" style="display:none;">
+    <div class="modal-box">
+      <h3>Tarih Detayı</h3>
+      <p>Seçilen kaydın tarihini değiştirebilirsiniz.</p>
+      <input type="hidden" id="modalTargetType">
+      <input type="hidden" id="modalTargetId">
+      <input type="date" id="modalDateInput">
+      <button class="btn" onclick="saveModalDate()">Tarihi Güncelle</button>
+      <button class="btn btn-secondary" onclick="closeDateModal()">Kapat</button>
     </div>
   </div>
 
@@ -272,7 +296,7 @@
     <button class="menu-toggle" onclick="toggleMenu()">☰ Menü</button>
   </div>
 
-  <!-- SOL MENÜ (YANDAN KAYAN) -->
+  <!-- SOL MENÜ -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <img src="Saros_2.jpg" alt="Saros Teknoloji Logo" class="sidebar-logo">
@@ -486,12 +510,45 @@
       }
     };
 
-    // Oturum Kontrolü
     if (sessionStorage.getItem('authenticated') === 'true') {
       document.getElementById('loginModal').style.display = 'none';
     }
 
-    // Sıralama Yönleri (asc: eskiden yeniye, desc: yeniden eskiye)
+    // Tarih Modal Fonksiyonları
+    window.openDateModal = function(type, id, currentDate) {
+      document.getElementById('modalTargetType').value = type;
+      document.getElementById('modalTargetId').value = id;
+      document.getElementById('modalDateInput').value = currentDate;
+      document.getElementById('datePickerModal').style.display = 'flex';
+    };
+
+    window.closeDateModal = function() {
+      document.getElementById('datePickerModal').style.display = 'none';
+    };
+
+    window.saveModalDate = function() {
+      const type = document.getElementById('modalTargetType').value;
+      const id = document.getElementById('modalTargetId').value;
+      const newDate = document.getElementById('modalDateInput').value;
+
+      if (!newDate) {
+        alert("Lütfen geçerli bir tarih seçin.");
+        return;
+      }
+
+      if (type === 'service') {
+        const item = window.db.services.find(s => s.id === id);
+        if (item) item.date = newDate;
+      } else if (type === 'todo') {
+        const item = window.db.todos.find(t => t.id === id);
+        if (item) item.date = newDate;
+      }
+
+      saveDB();
+      closeDateModal();
+    };
+
+    // Sıralama Yönleri
     window.sortDirections = {
       services: 'desc',
       todos: 'asc',
@@ -532,7 +589,6 @@
       renderAll();
     });
 
-    // Mobil Menü Yandan Açma/Kapama Fonksiyonu
     window.toggleMenu = function() {
       const sidebar = document.getElementById('sidebar');
       const overlay = document.getElementById('menuOverlay');
@@ -713,7 +769,7 @@
         </tr>
       `).join('');
 
-      // Servis Kayıtları Tablosu (Sıralamalı)
+      // Servis Kayıtları Tablosu (Tıklanabilir Tarih eklendi)
       let sortedServices = [...(window.db.services || [])];
       sortedServices.sort((a, b) => {
         const d1 = new Date(a.date), d2 = new Date(b.date);
@@ -724,7 +780,7 @@
         const custName = getCustNameById(s.custId);
         return `
           <tr>
-            <td>${escapeHtml(s.date)}</td>
+            <td><span class="clickable-date" onclick="openDateModal('service', '${s.id}', '${s.date}')">${escapeHtml(s.date)} 📅</span></td>
             <td>${escapeHtml(custName || 'Bilinmeyen Müşteri')}</td>
             <td>${escapeHtml(s.model)} (${escapeHtml(s.sicil)})</td>
             <td>${escapeHtml(s.fault)}</td>
@@ -738,7 +794,7 @@
         `;
       }).join('');
 
-      // Yapılacaklar Tablosu (Sıralamalı)
+      // Yapılacaklar Tablosu (Tıklanabilir Tarih eklendi)
       let sortedTodos = [...(window.db.todos || [])];
       sortedTodos.sort((a, b) => {
         const d1 = new Date(a.date), d2 = new Date(b.date);
@@ -749,7 +805,7 @@
         const custName = t.custId ? getCustNameById(t.custId) : '-';
         return `
           <tr>
-            <td>${escapeHtml(t.date)}</td>
+            <td><span class="clickable-date" onclick="openDateModal('todo', '${t.id}', '${t.date}')">${escapeHtml(t.date)} 📅</span></td>
             <td>${escapeHtml(t.task)}</td>
             <td>${escapeHtml(custName)}</td>
             <td class="actions">
@@ -780,17 +836,17 @@
         return matchName && matchAction && matchStart && matchEnd;
       });
 
-      // Raporlar Tablosu Tarih Sıralaması
       filtered.sort((a, b) => {
         const d1 = new Date(a.date), d2 = new Date(b.date);
         return window.sortDirections.reports === 'asc' ? d1 - d2 : d2 - d1;
       });
 
+      // Raporlar Tablosu (Tıklanabilir Tarih eklendi)
       document.getElementById('reportTableBody').innerHTML = filtered.map(s => {
         const custName = getCustNameById(s.custId);
         return `
           <tr>
-            <td>${escapeHtml(s.date)}</td>
+            <td><span class="clickable-date" onclick="openDateModal('service', '${s.id}', '${s.date}')">${escapeHtml(s.date)} 📅</span></td>
             <td>${escapeHtml(custName || '-')}</td>
             <td>${escapeHtml(s.model)}</td>
             <td>${escapeHtml(s.sicil || '-')}</td>
@@ -848,38 +904,42 @@
         }));
       }
 
-      if (exportData.length === 0) {
-        alert("Aktarılacak veri bulunamadı!");
-        return;
-      }
-
       const worksheet = XLSX.utils.json_to_sheet(exportData);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Sayfa1");
-      XLSX.writeFile(workbook, `${filename}.xlsx`);
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Veriler");
+      XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`);
     };
 
     window.exportBackup = function() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.db, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `Saros_Teknoloji_Yedek_${new Date().toISOString().slice(0,10)}.json`);
+      downloadAnchor.setAttribute("download", `saros_yedek_${new Date().toISOString().slice(0,10)}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
     };
 
-    window.importBackup = function(e) {
-      const file = e.target.files[0];
-      if(!file) return;
+    window.importBackup = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
-          window.db = JSON.parse(e.target.result);
-          saveDB();
-          alert('Yedek başarıyla buluta yüklendi!');
-        } catch(err) {
-          alert('Geçersiz yedek dosyası!');
+          const importedData = JSON.parse(e.target.result);
+          if (importedData && (importedData.customers || importedData.services || importedData.todos)) {
+            window.db = {
+              customers: importedData.customers || [],
+              services: importedData.services || [],
+              todos: importedData.todos || []
+            };
+            saveDB();
+            alert("Yedek başarıyla yüklendi ve buluta aktarıldı.");
+          } else {
+            alert("Geçersiz yedek dosyası biçimi.");
+          }
+        } catch (err) {
+          alert("Dosya okuma hatası: " + err.message);
         }
       };
       reader.readAsText(file);
