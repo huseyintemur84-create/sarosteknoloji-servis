@@ -194,11 +194,15 @@
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
 
-    /* Tarih Giriş İkonunun BEYAZ Yapılması (Açılan Takvimi Etkilemez) */
+    /* Tarih Giriş İkonunu Kesin Olarak BEYAZ Yapma (Açılan Takvimi Etkilemez) */
     input[type="date"]::-webkit-calendar-picker-indicator {
-      filter: invert(1) brightness(100%) !important;
+      background-color: transparent;
+      filter: invert(1) brightness(200%) !important;
+      -webkit-appearance: none;
       opacity: 1 !important;
       cursor: pointer;
+      padding: 0;
+      margin: 0;
     }
 
     /* Tablo Stilleri */
