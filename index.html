@@ -375,9 +375,12 @@
       </div>
 
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom: 15px;">
           <h3>Servis Kayıtları Listesi</h3>
-          <button class="btn btn-excel" onclick="exportDataToExcel('services')">Excel'e Aktar</button>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; width: 100%; max-width: 500px;">
+            <input type="text" id="serviceSearchInput" oninput="renderServicesTable()" placeholder="🔍 Müşteri, cihaz, sicil veya arıza ara..." style="flex:1; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: #0f172a; color: var(--text); outline: none;">
+            <button class="btn btn-excel" onclick="exportDataToExcel('services')">Excel'e Aktar</button>
+          </div>
         </div>
         <div class="table-container">
           <table id="serviceTable">
@@ -754,27 +757,21 @@
       }
     };
 
-    function renderAll() {
-      // Müşteriler Datalist
-      const customerOptions = (window.db.customers || []).map(c => `<option value="${escapeHtml(c.name)}">`).join('');
-      document.getElementById('customerListOptions').innerHTML = customerOptions;
-
-      // Müşteri Tablosu
-      document.getElementById('customerTableBody').innerHTML = (window.db.customers || []).map(c => `
-        <tr>
-          <td>${escapeHtml(c.name)}</td>
-          <td>${escapeHtml(c.phone)}</td>
-          <td>${escapeHtml(c.taxOffice)} / ${escapeHtml(c.taxNo)}</td>
-          <td>${escapeHtml(c.address)}</td>
-          <td class="actions">
-            <button class="btn btn-warning" onclick="editCustomer('${c.id}')">Düzenle</button>
-            <button class="btn btn-blue" onclick="deleteCustomer('${c.id}')">Sil</button>
-          </td>
-        </tr>
-      `).join('');
-
-      // Servis Kayıtları Tablosu
+    window.renderServicesTable = function() {
+      const query = (document.getElementById('serviceSearchInput')?.value || '').toLowerCase().trim();
       let sortedServices = [...(window.db.services || [])];
+      
+      if (query) {
+        sortedServices = sortedServices.filter(s => {
+          const custName = getCustNameById(s.custId).toLowerCase();
+          const model = (s.model || '').toLowerCase();
+          const sicil = (s.sicil || '').toLowerCase();
+          const fault = (s.fault || '').toLowerCase();
+          const action = (s.action || '').toLowerCase();
+          return custName.includes(query) || model.includes(query) || sicil.includes(query) || fault.includes(query) || action.includes(query);
+        });
+      }
+
       sortedServices.sort((a, b) => {
         const d1 = new Date(a.date), d2 = new Date(b.date);
         return window.sortDirections.services === 'asc' ? d1 - d2 : d2 - d1;
@@ -797,6 +794,29 @@
           </tr>
         `;
       }).join('');
+    };
+
+    function renderAll() {
+      // Müşteriler Datalist
+      const customerOptions = (window.db.customers || []).map(c => `<option value="${escapeHtml(c.name)}">`).join('');
+      document.getElementById('customerListOptions').innerHTML = customerOptions;
+
+      // Müşteri Tablosu
+      document.getElementById('customerTableBody').innerHTML = (window.db.customers || []).map(c => `
+        <tr>
+          <td>${escapeHtml(c.name)}</td>
+          <td>${escapeHtml(c.phone)}</td>
+          <td>${escapeHtml(c.taxOffice)} / ${escapeHtml(c.taxNo)}</td>
+          <td>${escapeHtml(c.address)}</td>
+          <td class="actions">
+            <button class="btn btn-warning" onclick="editCustomer('${c.id}')">Düzenle</button>
+            <button class="btn btn-blue" onclick="deleteCustomer('${c.id}')">Sil</button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Servis Kayıtları Tablosu (Arama Filtreli)
+      window.renderServicesTable();
 
       // Yapılacaklar Tablosu
       let sortedTodos = [...(window.db.todos || [])];
@@ -876,7 +896,19 @@
         }));
       } else if (type === 'services') {
         filename = 'Servis_Kayitlari.xlsx';
-        data = (window.db.services || []).map(s => ({
+        const query = (document.getElementById('serviceSearchInput')?.value || '').toLowerCase().trim();
+        let servicesToExport = window.db.services || [];
+        if (query) {
+          servicesToExport = servicesToExport.filter(s => {
+            const custName = getCustNameById(s.custId).toLowerCase();
+            const model = (s.model || '').toLowerCase();
+            const sicil = (s.sicil || '').toLowerCase();
+            const fault = (s.fault || '').toLowerCase();
+            const action = (s.action || '').toLowerCase();
+            return custName.includes(query) || model.includes(query) || sicil.includes(query) || fault.includes(query) || action.includes(query);
+          });
+        }
+        data = servicesToExport.map(s => ({
           'Tarih': s.date,
           'Müşteri': getCustNameById(s.custId),
           'Cihaz Modeli': s.model,
