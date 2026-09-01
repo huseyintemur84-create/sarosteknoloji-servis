@@ -1,861 +1,12 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Saros Teknoloji Servis Programı</title>
-  <!-- SheetJS (Excel Aktarımı İçin) -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  
-  <style>
-    :root {
-      --primary: #3b82f6;    
-      --accent: #2563eb;    
-      --bg: #0f172a;           /* Koyu Arka Plan */
-      --card-bg: #1e293b;      /* Kart Koyu Arka Planı */
-      --border-color: #334155; /* Koyu Kenarlık */
-      --text: #f8fafc;         /* Açık Renk Yazı */
-      --text-muted: #94a3b8;   /* İkincil Yazı Renk */
-      --sidebar-bg: #1e293b;  
-      --sidebar-text: #e2e8f0;
-      --warning: #f59e0b;    
-      --success: #10b981;
-    }
-
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-    body { display: flex; flex-direction: row; min-height: 100vh; background: var(--bg); color: var(--text); }
-    
-    /* Şifre Giriş Ekranı Pop-up/Modal */
-    #loginModal, #datePickerModal {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(2, 6, 23, 0.9);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    .modal-box {
-      background: var(--card-bg);
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      width: 90%;
-      max-width: 360px;
-      text-align: center;
-      border: 1px solid var(--border-color);
-    }
-    .modal-box h2, .modal-box h3 { margin-bottom: 8px; color: var(--text); font-size: 20px; }
-    .modal-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
-    .modal-box input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      font-size: 16px;
-      text-align: center;
-      background: #0f172a;
-      color: var(--text);
-    }
-    .modal-box button { width: 100%; padding: 10px; font-size: 15px; margin-top: 5px; }
-
-    /* Üst Mobil Bar */
-    .mobile-header {
-      display: none;
-      background: var(--card-bg);
-      color: var(--text);
-      padding: 10px 15px;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 999;
-      border-bottom: 1px solid var(--border-color);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .mobile-logo { 
-      height: 40px; 
-      width: auto;
-      max-width: 160px;
-      object-fit: contain; 
-      display: block;
-    }
-
-    .menu-toggle {
-      background: var(--primary);
-      color: #ffffff;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    /* Sol Menü */
-    .sidebar { 
-      width: 280px; 
-      background: var(--sidebar-bg); 
-      color: var(--sidebar-text); 
-      display: flex; 
-      flex-direction: column; 
-      padding: 20px 0; 
-      flex-shrink: 0; 
-      border-right: 1px solid var(--border-color);
-      box-shadow: 2px 0 10px rgba(0,0,0,0.3);
-      transition: transform 0.3s ease-in-out;
-      z-index: 1001;
-    }
-
-    .sidebar-header { 
-      padding: 10px 15px 25px 15px; 
-      border-bottom: 1px solid var(--border-color); 
-      text-align: center; 
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--sidebar-bg);
-    }
-    
-    .sidebar-logo { 
-      width: 100%; 
-      max-width: 180px; 
-      height: auto; 
-      max-height: 100px; 
-      object-fit: contain; 
-      display: block; 
-      margin: 0 auto;
-    }
-
-    .sidebar-close-btn {
-      display: none;
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 24px;
-      cursor: pointer;
-    }
-
-    .menu-item { 
-      padding: 14px 25px; 
-      cursor: pointer; 
-      display: flex; 
-      align-items: center; 
-      gap: 10px; 
-      transition: 0.2s; 
-      font-weight: 600; 
-      color: var(--text-muted); 
-    }
-
-    .menu-item:hover {
-      background: #334155;
-      color: var(--text);
-    }
-
-    .menu-item.active { 
-      background: #1e3a8a; 
-      color: #ffffff;
-      border-left: 4px solid var(--primary); 
-    }
-
-    .menu-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(2px);
-      z-index: 1000;
-      transition: opacity 0.3s ease;
-    }
-    .menu-overlay.open { display: block; }
-
-    /* Ana İçerik */
-    .main-content { flex: 1; padding: 20px; overflow-y: auto; width: 100%; }
-    .section { display: none; }
-    .section.active { display: block; }
-    .card { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 20px; border: 1px solid var(--border-color); }
-    
-    /* Form Elemanları */
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-    .form-group input, .form-group select, .form-group textarea { 
-      padding: 9px 12px; 
-      border: 1px solid var(--border-color); 
-      border-radius: 6px; 
-      font-size: 14px; 
-      width: 100%; 
-      outline: none; 
-      background: #0f172a;
-      color: var(--text);
-      transition: border-color 0.2s; 
-    }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
-
-    /* Tablo ve Tarih Sütun Genişletme Stilleri */
-    .table-container { width: 100%; overflow-x: auto; margin-top: 15px; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 650px; }
-    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-color); }
-    th { background: #0f172a; font-weight: 600; color: var(--text-muted); }
-    th.sortable { cursor: pointer; user-select: none; }
-    th.sortable:hover { background: #334155; color: var(--primary); }
-
-    /* Tarih Sütununun Taşmasını ve Kırılmasını Engelleyen Özel Sınıf */
-    .date-col {
-      white-space: nowrap !important;
-      min-width: 150px !important;
-      width: 150px !important;
-    }
-
-    /* Tıklanabilir Tarih Hücresi Stili */
-    .clickable-date {
-      color: var(--primary);
-      cursor: pointer;
-      text-decoration: underline;
-      font-weight: 600;
-      display: inline-block;
-    }
-    .clickable-date:hover {
-      color: #60a5fa;
-    }
-
-    /* Standart Butonlar */
-    .btn, button[type="submit"] { 
-      padding: 9px 18px; 
-      border: none; 
-      border-radius: 6px; 
-      cursor: pointer; 
-      font-weight: 600; 
-      background-color: var(--primary); 
-      color: #ffffff; 
-      transition: opacity 0.2s; 
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .btn:hover { opacity: 0.9; }
-
-    button.btn-warning { background-color: var(--warning); color: white; }
-    button.btn-blue { background-color: #2563eb; color: white; }
-    button.btn-excel { background-color: var(--success); color: white; }
-    button.btn-secondary { background-color: #475569; color: white; }
-    .actions { display: flex; gap: 6px; }
-
-    /* Mobil Stiller */
-    @media (max-width: 768px) {
-      body { flex-direction: column; }
-      .mobile-header { display: flex; }
-      
-      .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        width: 260px;
-        transform: translateX(-100%);
-        box-shadow: 4px 0 15px rgba(0,0,0,0.5);
-      }
-      .sidebar.open {
-        transform: translateX(0);
-      }
-      .sidebar-header { display: flex; }
-      .sidebar-close-btn { display: block; }
-      .menu-item { border-bottom: 1px solid var(--border-color); padding: 16px 20px; }
-      .main-content { padding: 12px; }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- ŞİFRE GİRİŞ MODALI -->
-  <div id="loginModal">
-    <div class="modal-box">
-      <h2>Saros Teknoloji</h2>
-      <p>Lütfen devam etmek için şifrenizi girin.</p>
-      <input type="password" id="passInput" placeholder="Sistem Şifresi" onkeydown="if(event.key === 'Enter') checkPassword()">
-      <button class="btn" onclick="checkPassword()">Giriş Yap</button>
-    </div>
-  </div>
-
-  <!-- TARİH DETAY/GÜNCELLEME MODALI -->
-  <div id="datePickerModal" style="display:none;">
-    <div class="modal-box">
-      <h3>Tarih Detayı</h3>
-      <p>Seçilen kaydın tarihini değiştirebilirsiniz.</p>
-      <input type="hidden" id="modalTargetType">
-      <input type="hidden" id="modalTargetId">
-      <input type="date" id="modalDateInput">
-      <button class="btn" onclick="saveModalDate()">Tarihi Güncelle</button>
-      <button class="btn btn-secondary" onclick="closeDateModal()">Kapat</button>
-    </div>
-  </div>
-
-  <!-- MOBİL MENÜ KARARTMA OVERLAY -->
-  <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
-
-  <!-- MOBİL BAŞLIK VE MENÜ BUTONU -->
-  <div class="mobile-header">
-    <img src="Saros_2.jpg" alt="Saros Teknoloji" class="mobile-logo">
-    <button class="menu-toggle" onclick="toggleMenu()">☰ Menü</button>
-  </div>
-
-  <!-- SOL MENÜ -->
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <img src="Saros_2.jpg" alt="Saros Teknoloji Logo" class="sidebar-logo">
-      <button class="sidebar-close-btn" onclick="toggleMenu()">✕</button>
-    </div>
-    <div class="menu-item active" onclick="showSection('customers', event)">Müşteri Kayıtları</div>
-    <div class="menu-item" onclick="showSection('services', event)">Servis Kayıtları</div>
-    <div class="menu-item" onclick="showSection('todos', event)">Yapılacaklar</div>
-    <div class="menu-item" onclick="showSection('reports', event)">Raporlama</div>
-    <div class="menu-item" onclick="showSection('settings', event)">Sistem & Yedekleme</div>
-  </div>
-
-  <!-- ANA İÇERİK BÖLGESİ -->
-  <div class="main-content">
-
-    <!-- 1. MÜŞTERİ KAYITLARI -->
-    <div id="customers" class="section active">
-      <div class="card">
-        <h3>Müşteri Ekle / Düzenle</h3>
-        <form id="customerForm" onsubmit="saveCustomer(event)" style="margin-top:15px;">
-          <input type="hidden" id="custId">
-          <div class="form-grid">
-            <div class="form-group"><label>Firma / Müşteri İsmi</label><input type="text" id="custName" required></div>
-            <div class="form-group"><label>Telefon</label><input type="text" id="custPhone" required></div>
-            <div class="form-group"><label>Vergi Dairesi</label><input type="text" id="custTaxOffice"></div>
-            <div class="form-group"><label>Vergi Numarası</label><input type="text" id="custTaxNo"></div>
-          </div>
-          <div class="form-group" style="margin-bottom:15px;"><label>Adres</label><textarea id="custAddress" rows="2"></textarea></div>
-          <button type="submit" class="btn" id="custBtn">Müşteriyi Kaydet</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-          <h3>Müşteri Listesi</h3>
-          <button class="btn btn-excel" onclick="exportDataToExcel('customers')">Excel'e Aktar</button>
-        </div>
-        <div class="table-container">
-          <table id="customerTable">
-            <thead>
-              <tr><th>Müşteri Adı</th><th>Telefon</th><th>Vergi D./No</th><th>Adres</th><th>İşlemler</th></tr>
-            </thead>
-            <tbody id="customerTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. SERVİS KAYITLARI -->
-    <div id="services" class="section">
-      <div class="card">
-        <h3>Yeni Servis Kaydı Ekle / Düzenle</h3>
-        <form id="serviceForm" onsubmit="saveService(event)" style="margin-top:15px;">
-          <input type="hidden" id="servId">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Müşteri (Yazarak Ara veya Seç)</label>
-              <input list="customerListOptions" id="servCustInput" placeholder="Müşteri ara..." required>
-              <datalist id="customerListOptions"></datalist>
-            </div>
-            <div class="form-group"><label>Servis Tarihi</label><input type="date" id="servDate" required></div>
-            <div class="form-group"><label>Cihaz Modeli</label><input type="text" id="servModel" required></div>
-            <div class="form-group"><label>Sicil Numarası</label><input type="text" id="servSicil" required></div>
-            <div class="form-group"><label>Servis Ücreti (TL)</label><input type="number" step="0.01" id="servPrice" required></div>
-          </div>
-          <div class="form-grid">
-            <div class="form-group"><label>Bildirilen Arıza</label><textarea id="servFault" rows="2" required></textarea></div>
-            <div class="form-group"><label>Yapılan İşlem</label><textarea id="servAction" rows="2" required></textarea></div>
-          </div>
-          <button type="submit" class="btn" id="servBtn">Servis Kaydını Kaydet</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-          <h3>Servis Kayıtları Listesi</h3>
-          <button class="btn btn-excel" onclick="exportDataToExcel('services')">Excel'e Aktar</button>
-        </div>
-        <div class="table-container">
-          <table id="serviceTable">
-            <thead>
-              <tr>
-                <th class="sortable date-col" onclick="toggleSort('services')">Tarih ↕</th>
-                <th>Müşteri</th>
-                <th>Cihaz / Sicil</th>
-                <th>Arıza</th>
-                <th>Yapılan İşlem</th>
-                <th>Ücret</th>
-                <th>İşlemler</th>
-              </tr>
-            </thead>
-            <tbody id="serviceTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. YAPILACAKLAR -->
-    <div id="todos" class="section">
-      <div class="card">
-        <h3>Görev Ekle / Düzenle</h3>
-        <form id="todoForm" onsubmit="saveTodo(event)" style="margin-top:15px;">
-          <input type="hidden" id="todoId">
-          <div class="form-grid">
-            <div class="form-group"><label>Görev Tanımı</label><input type="text" id="todoTask" required></div>
-            <div class="form-group">
-              <label>İlişkili Müşteri (Opsiyonel - Yazarak Ara)</label>
-              <input list="customerListOptions" id="todoCustInput" placeholder="Müşteri ara...">
-            </div>
-            <div class="form-group"><label>Tarih</label><input type="date" id="todoDate" required></div>
-          </div>
-          <button type="submit" class="btn" id="todoBtn">Görev Ekle</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <h3>Görev Listesi</h3>
-        <div class="table-container">
-          <table id="todoTable">
-            <thead>
-              <tr>
-                <th class="sortable date-col" onclick="toggleSort('todos')">Tarih ↕</th>
-                <th>Görev</th>
-                <th>Müşteri</th>
-                <th>İşlemler</th>
-              </tr>
-            </thead>
-            <tbody id="todoTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. RAPORLAMA -->
-    <div id="reports" class="section">
-      <div class="card">
-        <h3>Detaylı Servis Raporlama</h3>
-        <div class="form-grid" style="margin-top:15px;">
-          <div class="form-group"><label>Müşteri Arama</label><input type="text" id="repCust" oninput="filterReports()"></div>
-          <div class="form-group"><label>Başlangıç Tarihi</label><input type="date" id="repStartDate" onchange="filterReports()"></div>
-          <div class="form-group"><label>Bitiş Tarihi</label><input type="date" id="repEndDate" onchange="filterReports()"></div>
-          <div class="form-group"><label>Yapılan İşlem Ara</label><input type="text" id="repAction" oninput="filterReports()"></div>
-        </div>
-        <button class="btn btn-excel" onclick="exportDataToExcel('reports')" style="margin-top:10px;">Raporu Excel'e Aktar</button>
-      </div>
-
-      <div class="card">
-        <div class="table-container">
-          <table id="reportTable">
-            <thead>
-              <tr>
-                <th class="sortable date-col" onclick="toggleSort('reports')">Tarih ↕</th>
-                <th>Müşteri</th>
-                <th>Cihaz</th>
-                <th>Sicil No</th>
-                <th>Yapılan İşlem</th>
-                <th>Ücret</th>
-              </tr>
-            </thead>
-            <tbody id="reportTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. YEDEKLEME & AYARLAR -->
-    <div id="settings" class="section">
-      <div class="card">
-        <h3>Veri Yedekleme ve Geri Yükleme</h3>
-        <p style="margin: 10px 0; font-size:14px; color:var(--text-muted);">Bulut veritabanındaki tüm verileri bilgisayarınıza indirebilir veya yerel yedeğinizi buluta aktarabilirsiniz.</p>
-        <div style="display:flex; gap:15px; margin-top:15px; flex-wrap:wrap;">
-          <button class="btn" onclick="exportBackup()">Yedek İndir (JSON)</button>
-          <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importBackup(event)">
-          <button class="btn btn-warning" onclick="document.getElementById('importFile').click()">Yedekten Buluta Yükle</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- FIREBASE VE UYGULAMA KODLARI -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDiMxKk4g1nMDdBRnrq0zdghTZGyvdi3mQ",
-      authDomain: "saros-teknoloji.firebaseapp.com",
-      databaseURL: "https://saros-teknoloji-default-rtdb.firebaseio.com",
-      projectId: "saros-teknoloji",
-      storageBucket: "saros-teknoloji.appspot.com",
-      messagingSenderId: "738803595007",
-      appId: "1:738803595007:web:f920a71fbb1dbd5f8d7eca",
-      measurementId: "G-NWBKBG61NG"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-
-    window.db = { customers: [], services: [], todos: [] };
-
-    // Şifre Giriş Kontrolü
-    const APP_PASSWORD = "saros123";
-    window.checkPassword = function() {
-      const input = document.getElementById('passInput').value;
-      if (input === APP_PASSWORD) {
-        document.getElementById('loginModal').style.display = 'none';
-        sessionStorage.setItem('authenticated', 'true');
-      } else {
-        alert("Hatalı şifre!");
-      }
-    };
-
-    if (sessionStorage.getItem('authenticated') === 'true') {
-      document.getElementById('loginModal').style.display = 'none';
-    }
-
-    // Tarih Modal Fonksiyonları
-    window.openDateModal = function(type, id, currentDate) {
-      document.getElementById('modalTargetType').value = type;
-      document.getElementById('modalTargetId').value = id;
-      document.getElementById('modalDateInput').value = currentDate;
-      document.getElementById('datePickerModal').style.display = 'flex';
-    };
-
-    window.closeDateModal = function() {
-      document.getElementById('datePickerModal').style.display = 'none';
-    };
-
-    window.saveModalDate = function() {
-      const type = document.getElementById('modalTargetType').value;
-      const id = document.getElementById('modalTargetId').value;
-      const newDate = document.getElementById('modalDateInput').value;
-
-      if (!newDate) {
-        alert("Lütfen geçerli bir tarih seçin.");
-        return;
-      }
-
-      if (type === 'service') {
-        const item = window.db.services.find(s => s.id === id);
-        if (item) item.date = newDate;
-      } else if (type === 'todo') {
-        const item = window.db.todos.find(t => t.id === id);
-        if (item) item.date = newDate;
-      }
-
-      saveDB();
-      closeDateModal();
-    };
-
-    // Sıralama Yönleri
-    window.sortDirections = {
-      services: 'desc',
-      todos: 'asc',
-      reports: 'desc'
-    };
-
-    window.toggleSort = function(section) {
-      window.sortDirections[section] = window.sortDirections[section] === 'asc' ? 'desc' : 'asc';
-      renderAll();
-    };
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function saveDB() {
-      set(ref(database, 'saros_data'), window.db);
-      renderAll();
-    }
-
-    onValue(ref(database, 'saros_data'), (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        window.db = {
-          customers: data.customers || [],
-          services: data.services || [],
-          todos: data.todos || []
-        };
-      } else {
-        window.db = { customers: [], services: [], todos: [] };
-      }
-      renderAll();
-    });
-
-    window.toggleMenu = function() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('menuOverlay');
-      if (sidebar && overlay) {
-        sidebar.classList.toggle('open');
-        overlay.classList.toggle('open');
-      }
-    };
-
-    window.showSection = function(id, e) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      if (e && e.target) e.target.classList.add('active');
-
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('menuOverlay');
-      if (sidebar && overlay) {
-        sidebar.classList.remove('open');
-        overlay.classList.remove('open');
-      }
-    };
-
-    function getCustIdByName(name) {
-      const c = (window.db.customers || []).find(item => item.name === name);
-      return c ? c.id : name;
-    }
-
-    function getCustNameById(id) {
-      const c = (window.db.customers || []).find(item => item.id === id);
-      return c ? c.name : id;
-    }
-
-    window.saveCustomer = function(e) {
-      e.preventDefault();
-      const id = document.getElementById('custId').value || Date.now().toString();
-      const custData = {
-        id,
-        name: document.getElementById('custName').value.trim(),
-        phone: document.getElementById('custPhone').value.trim(),
-        taxOffice: document.getElementById('custTaxOffice').value.trim(),
-        taxNo: document.getElementById('custTaxNo').value.trim(),
-        address: document.getElementById('custAddress').value.trim()
-      };
-      
-      const idx = window.db.customers.findIndex(c => c.id === id);
-      if(idx > -1) window.db.customers[idx] = custData;
-      else window.db.customers.push(custData);
-      
-      document.getElementById('customerForm').reset();
-      document.getElementById('custId').value = '';
-      document.getElementById('custBtn').innerText = 'Müşteriyi Kaydet';
-      saveDB();
-    };
-
-    window.editCustomer = function(id) {
-      const c = window.db.customers.find(item => item.id === id);
-      if(!c) return;
-      document.getElementById('custId').value = c.id;
-      document.getElementById('custName').value = c.name;
-      document.getElementById('custPhone').value = c.phone;
-      document.getElementById('custTaxOffice').value = c.taxOffice;
-      document.getElementById('custTaxNo').value = c.taxNo;
-      document.getElementById('custAddress').value = c.address;
-      document.getElementById('custBtn').innerText = 'Müşteri Güncelle';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.deleteCustomer = function(id) {
-      if(confirm('Müşteriyi silmek istediğinize emin misiniz?')) {
-        window.db.customers = window.db.customers.filter(c => c.id !== id);
-        saveDB();
-      }
-    };
-
-    window.saveService = function(e) {
-      e.preventDefault();
-      const id = document.getElementById('servId').value || Date.now().toString();
-      const custNameInput = document.getElementById('servCustInput').value.trim();
-      const servData = {
-        id,
-        custId: getCustIdByName(custNameInput),
-        date: document.getElementById('servDate').value,
-        model: document.getElementById('servModel').value.trim(),
-        sicil: document.getElementById('servSicil').value.trim(),
-        price: document.getElementById('servPrice').value,
-        fault: document.getElementById('servFault').value.trim(),
-        action: document.getElementById('servAction').value.trim()
-      };
-
-      const idx = window.db.services.findIndex(s => s.id === id);
-      if(idx > -1) window.db.services[idx] = servData;
-      else window.db.services.push(servData);
-
-      document.getElementById('serviceForm').reset();
-      document.getElementById('servId').value = '';
-      document.getElementById('servBtn').innerText = 'Servis Kaydını Kaydet';
-      saveDB();
-    };
-
-    window.editService = function(id) {
-      const s = window.db.services.find(item => item.id === id);
-      if(!s) return;
-      document.getElementById('servId').value = s.id;
-      document.getElementById('servCustInput').value = getCustNameById(s.custId);
-      document.getElementById('servDate').value = s.date;
-      document.getElementById('servModel').value = s.model;
-      document.getElementById('servSicil').value = s.sicil;
-      document.getElementById('servPrice').value = s.price;
-      document.getElementById('servFault').value = s.fault;
-      document.getElementById('servAction').value = s.action;
-      document.getElementById('servBtn').innerText = 'Servis Kaydını Güncelle';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.deleteService = function(id) {
-      if(confirm('Servis kaydını silmek istediğinize emin misiniz?')) {
-        window.db.services = window.db.services.filter(s => s.id !== id);
-        saveDB();
-      }
-    };
-
-    window.saveTodo = function(e) {
-      e.preventDefault();
-      const id = document.getElementById('todoId').value || Date.now().toString();
-      const custNameInput = document.getElementById('todoCustInput').value.trim();
-      const todoData = {
-        id,
-        task: document.getElementById('todoTask').value.trim(),
-        custId: custNameInput ? getCustIdByName(custNameInput) : '',
-        date: document.getElementById('todoDate').value
-      };
-
-      const idx = window.db.todos.findIndex(t => t.id === id);
-      if(idx > -1) window.db.todos[idx] = todoData;
-      else window.db.todos.push(todoData);
-
-      document.getElementById('todoForm').reset();
-      document.getElementById('todoId').value = '';
-      document.getElementById('todoBtn').innerText = 'Görev Ekle';
-      saveDB();
-    };
-
-    window.editTodo = function(id) {
-      const t = window.db.todos.find(item => item.id === id);
-      if(!t) return;
-      document.getElementById('todoId').value = t.id;
-      document.getElementById('todoTask').value = t.task;
-      document.getElementById('todoCustInput').value = t.custId ? getCustNameById(t.custId) : '';
-      document.getElementById('todoDate').value = t.date;
-      document.getElementById('todoBtn').innerText = 'Görev Güncelle';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.deleteTodo = function(id) {
-      if(confirm('Görevi tamamlandı olarak işaretleyip silmek istiyor musunuz?')) {
-        window.db.todos = window.db.todos.filter(t => t.id !== id);
-        saveDB();
-      }
-    };
-
-    function renderAll() {
-      // Müşteriler Datalist
-      const customerOptions = (window.db.customers || []).map(c => `<option value="${escapeHtml(c.name)}">`).join('');
-      document.getElementById('customerListOptions').innerHTML = customerOptions;
-
-      // Müşteri Tablosu
-      document.getElementById('customerTableBody').innerHTML = (window.db.customers || []).map(c => `
-        <tr>
-          <td>${escapeHtml(c.name)}</td>
-          <td>${escapeHtml(c.phone)}</td>
-          <td>${escapeHtml(c.taxOffice)} / ${escapeHtml(c.taxNo)}</td>
-          <td>${escapeHtml(c.address)}</td>
-          <td class="actions">
-            <button class="btn btn-warning" onclick="editCustomer('${c.id}')">Düzenle</button>
-            <button class="btn btn-blue" onclick="deleteCustomer('${c.id}')">Sil</button>
-          </td>
-        </tr>
-      `).join('');
-
-      // Servis Kayıtları Tablosu
-      let sortedServices = [...(window.db.services || [])];
-      sortedServices.sort((a, b) => {
-        const d1 = new Date(a.date), d2 = new Date(b.date);
-        return window.sortDirections.services === 'asc' ? d1 - d2 : d2 - d1;
-      });
-
-      document.getElementById('serviceTableBody').innerHTML = sortedServices.map(s => {
-        const custName = getCustNameById(s.custId);
-        return `
-          <tr>
-            <td class="date-col"><span class="clickable-date" onclick="openDateModal('service', '${s.id}', '${s.date}')">${escapeHtml(s.date)} 📅</span></td>
-            <td>${escapeHtml(custName || 'Bilinmeyen Müşteri')}</td>
-            <td>${escapeHtml(s.model)} (${escapeHtml(s.sicil)})</td>
-            <td>${escapeHtml(s.fault)}</td>
-            <td>${escapeHtml(s.action)}</td>
-            <td>${escapeHtml(s.price)} TL</td>
-            <td class="actions">
-              <button class="btn btn-warning" onclick="editService('${s.id}')">Düzenle</button>
-              <button class="btn btn-blue" onclick="deleteService('${s.id}')">Sil</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      // Yapılacaklar Tablosu
-      let sortedTodos = [...(window.db.todos || [])];
-      sortedTodos.sort((a, b) => {
-        const d1 = new Date(a.date), d2 = new Date(b.date);
-        return window.sortDirections.todos === 'asc' ? d1 - d2 : d2 - d1;
-      });
-
-      document.getElementById('todoTableBody').innerHTML = sortedTodos.map(t => {
-        const custName = t.custId ? getCustNameById(t.custId) : '-';
-        return `
-          <tr>
-            <td class="date-col"><span class="clickable-date" onclick="openDateModal('todo', '${t.id}', '${t.date}')">${escapeHtml(t.date)} 📅</span></td>
-            <td>${escapeHtml(t.task)}</td>
-            <td>${escapeHtml(custName)}</td>
-            <td class="actions">
-              <button class="btn btn-warning" onclick="editTodo('${t.id}')">Düzenle</button>
-              <button class="btn btn-blue" onclick="deleteTodo('${t.id}')">Tamamlandı / Sil</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      window.filterReports();
-    }
-
-    window.filterReports = function() {
-      const name = document.getElementById('repCust').value.toLowerCase();
-      const start = document.getElementById('repStartDate').value;
-      const end = document.getElementById('repEndDate').value;
-      const action = document.getElementById('repAction').value.toLowerCase();
-
-      let filtered = (window.db.services || []).filter(s => {
-        const custName = getCustNameById(s.custId).toLowerCase();
-        
-        const matchName = !name || custName.includes(name);
-        const matchAction = !action || s.action.toLowerCase().includes(action);
-        const matchStart = !start || s.date >= start;
-        const matchEnd = !end || s.date <= end;
-
-        return matchName && matchAction && matchStart && matchEnd;
-      });
-
-      filtered.sort((a, b) => {
-        const d1 = new Date(a.date), d2 = new Date(b.date);
-        return window.sortDirections.reports === 'asc' ? d1 - d2 : d2 - d1;
-      });
-
-      // Raporlar Tablosu
+// Raporlar Tablosu
       document.getElementById('reportTableBody').innerHTML = filtered.map(s => {
         const custName = getCustNameById(s.custId);
         return `
           <tr>
-            <td class="date-col"><span class="clickable-date" onclick="openDateModal('service', '${s.id}', '${s.date}')">${escapeHtml(s.date)} 📅</span></td>
-            <td>${escapeHtml(custName || '-')}</td>
+            <td class="date-col">${escapeHtml(s.date)}</td>
+            <td>${escapeHtml(custName || 'Bilinmeyen Müşteri')}</td>
             <td>${escapeHtml(s.model)}</td>
-            <td>${escapeHtml(s.sicil || '-')}</td>
+            <td>${escapeHtml(s.sicil)}</td>
             <td>${escapeHtml(s.action)}</td>
             <td>${escapeHtml(s.price)} TL</td>
           </tr>
@@ -863,86 +14,97 @@
       }).join('');
     };
 
+    // Excel Aktarım Fonksiyonu (SheetJS)
     window.exportDataToExcel = function(type) {
-      let exportData = [];
-      let filename = "";
+      let data = [];
+      let filename = 'rapor.xlsx';
 
       if (type === 'customers') {
-        filename = "Musteri_Listesi";
-        exportData = (window.db.customers || []).map(c => ({
-          "Müşteri Adı": c.name,
-          "Telefon": c.phone,
-          "Vergi Dairesi": c.taxOffice,
-          "Vergi No": c.taxNo,
-          "Adres": c.address
+        filename = 'Musteri_Listesi.xlsx';
+        data = (window.db.customers || []).map(c => ({
+          'Müşteri Adı': c.name,
+          'Telefon': c.phone,
+          'Vergi Dairesi': c.taxOffice,
+          'Vergi No': c.taxNo,
+          'Adres': c.address
         }));
       } else if (type === 'services') {
-        filename = "Servis_Kayitlari";
-        exportData = (window.db.services || []).map(s => ({
-          "Tarih": s.date,
-          "Müşteri": getCustNameById(s.custId),
-          "Cihaz": s.model,
-          "Sicil No": s.sicil,
-          "Arıza": s.fault,
-          "Yapılan İşlem": s.action,
-          "Ücret (TL)": s.price
+        filename = 'Servis_Kayitlari.xlsx';
+        data = (window.db.services || []).map(s => ({
+          'Tarih': s.date,
+          'Müşteri': getCustNameById(s.custId),
+          'Cihaz Modeli': s.model,
+          'Sicil No': s.sicil,
+          'Arıza': s.fault,
+          'Yapılan İşlem': s.action,
+          'Ücret (TL)': s.price
         }));
       } else if (type === 'reports') {
-        filename = "Servis_Raporu";
+        filename = 'Servis_Raporu.xlsx';
         const name = document.getElementById('repCust').value.toLowerCase();
         const start = document.getElementById('repStartDate').value;
         const end = document.getElementById('repEndDate').value;
         const action = document.getElementById('repAction').value.toLowerCase();
 
-        exportData = (window.db.services || []).filter(s => {
+        data = (window.db.services || []).filter(s => {
           const custName = getCustNameById(s.custId).toLowerCase();
           return (!name || custName.includes(name)) &&
                  (!action || s.action.toLowerCase().includes(action)) &&
                  (!start || s.date >= start) &&
                  (!end || s.date <= end);
         }).map(s => ({
-          "Tarih": s.date,
-          "Müşteri": getCustNameById(s.custId),
-          "Cihaz": s.model,
-          "Sicil No": s.sicil,
-          "Yapılan İşlem": s.action,
-          "Ücret (TL)": s.price
+          'Tarih': s.date,
+          'Müşteri': getCustNameById(s.custId),
+          'Cihaz Modeli': s.model,
+          'Sicil No': s.sicil,
+          'Yapılan İşlem': s.action,
+          'Ücret (TL)': s.price
         }));
       }
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Veriler");
-      XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`);
+      if (data.length === 0) {
+        alert('Aktarılacak veri bulunamadı.');
+        return;
+      }
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Veriler");
+      XLSX.writeFile(wb, filename);
     };
 
+    // Yedek İndirme (JSON Export)
     window.exportBackup = function() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.db, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `saros_yedek_${new Date().toISOString().slice(0,10)}.json`);
+      downloadAnchor.setAttribute("download", `saros_teknoloji_yedek_${new Date().toISOString().slice(0,10)}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
     };
 
-    window.importBackup = function(event) {
-      const file = event.target.files[0];
+    // Yedek Yükleme (JSON Import)
+    window.importBackup = function(e) {
+      const file = e.target.files[0];
       if (!file) return;
+
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function(evt) {
         try {
-          const importedData = JSON.parse(e.target.result);
+          const importedData = JSON.parse(evt.target.result);
           if (importedData && (importedData.customers || importedData.services || importedData.todos)) {
-            window.db = {
-              customers: importedData.customers || [],
-              services: importedData.services || [],
-              todos: importedData.todos || []
-            };
-            saveDB();
-            alert("Yedek başarıyla yüklendi ve buluta aktarıldı.");
+            if (confirm("Mevcut verilerinizin üzerine yedekteki veriler yazılacaktır. Onaylıyor musunuz?")) {
+              window.db = {
+                customers: importedData.customers || [],
+                services: importedData.services || [],
+                todos: importedData.todos || []
+              };
+              saveDB();
+              alert("Yedek başarıyla bulut veritabanına aktarıldı.");
+            }
           } else {
-            alert("Geçersiz yedek dosyası biçimi.");
+            alert("Geçersiz yedek dosyası formatı!");
           }
         } catch (err) {
           alert("Dosya okuma hatası: " + err.message);
@@ -950,6 +112,7 @@
       };
       reader.readAsText(file);
     };
+
   </script>
 </body>
 </html>
