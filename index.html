@@ -194,7 +194,7 @@
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
 
-    /* Tablo ve Tarih Sütun Genişletme Stilleri */
+    /* Tablo Stilleri */
     .table-container { width: 100%; overflow-x: auto; margin-top: 15px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 650px; }
     th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-color); }
@@ -202,14 +202,12 @@
     th.sortable { cursor: pointer; user-select: none; }
     th.sortable:hover { background: #334155; color: var(--primary); }
 
-    /* Tarih Sütununun Taşmasını ve Kırılmasını Engelleyen Özel Sınıf */
     .date-col {
       white-space: nowrap !important;
       min-width: 150px !important;
       width: 150px !important;
     }
 
-    /* Tıklanabilir Tarih Hücresi Stili */
     .clickable-date {
       color: var(--primary);
       cursor: pointer;
@@ -377,17 +375,10 @@
       </div>
 
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <h3>Servis Kayıtları Listesi</h3>
           <button class="btn btn-excel" onclick="exportDataToExcel('services')">Excel'e Aktar</button>
         </div>
-
-        <!-- HIZLI ARAMA KUTUSU -->
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label>Servis Kayıtlarında Ara (Müşteri, Model, Sicil No, Arıza veya İşlem)</label>
-          <input type="text" id="servSearchInput" placeholder="Aramak için kelime veya numara yazın..." oninput="renderServicesTable()">
-        </div>
-
         <div class="table-container">
           <table id="serviceTable">
             <thead>
@@ -763,51 +754,6 @@
       }
     };
 
-    // Servis Kayıtları Tablosu Çizimi ve Arama Filtresi
-    window.renderServicesTable = function() {
-      const query = (document.getElementById('servSearchInput')?.value || '').toLowerCase().trim();
-      let list = [...(window.db.services || [])];
-
-      if (query) {
-        list = list.filter(s => {
-          const custName = getCustNameById(s.custId).toLowerCase();
-          const model = (s.model || '').toLowerCase();
-          const sicil = (s.sicil || '').toLowerCase();
-          const fault = (s.fault || '').toLowerCase();
-          const action = (s.action || '').toLowerCase();
-
-          return custName.includes(query) ||
-                 model.includes(query) ||
-                 sicil.includes(query) ||
-                 fault.includes(query) ||
-                 action.includes(query);
-        });
-      }
-
-      list.sort((a, b) => {
-        const d1 = new Date(a.date), d2 = new Date(b.date);
-        return window.sortDirections.services === 'asc' ? d1 - d2 : d2 - d1;
-      });
-
-      document.getElementById('serviceTableBody').innerHTML = list.map(s => {
-        const custName = getCustNameById(s.custId);
-        return `
-          <tr>
-            <td class="date-col"><span class="clickable-date" onclick="openDateModal('service', '${s.id}', '${s.date}')">${escapeHtml(s.date)} 📅</span></td>
-            <td>${escapeHtml(custName || 'Bilinmeyen Müşteri')}</td>
-            <td>${escapeHtml(s.model)} (${escapeHtml(s.sicil)})</td>
-            <td>${escapeHtml(s.fault)}</td>
-            <td>${escapeHtml(s.action)}</td>
-            <td>${escapeHtml(s.price)} TL</td>
-            <td class="actions">
-              <button class="btn btn-warning" onclick="editService('${s.id}')">Düzenle</button>
-              <button class="btn btn-blue" onclick="deleteService('${s.id}')">Sil</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    };
-
     function renderAll() {
       // Müşteriler Datalist
       const customerOptions = (window.db.customers || []).map(c => `<option value="${escapeHtml(c.name)}">`).join('');
@@ -827,8 +773,30 @@
         </tr>
       `).join('');
 
-      // Servis Kayıtları Tablosunu Çiz
-      renderServicesTable();
+      // Servis Kayıtları Tablosu
+      let sortedServices = [...(window.db.services || [])];
+      sortedServices.sort((a, b) => {
+        const d1 = new Date(a.date), d2 = new Date(b.date);
+        return window.sortDirections.services === 'asc' ? d1 - d2 : d2 - d1;
+      });
+
+      document.getElementById('serviceTableBody').innerHTML = sortedServices.map(s => {
+        const custName = getCustNameById(s.custId);
+        return `
+          <tr>
+            <td class="date-col"><span class="clickable-date" onclick="openDateModal('service', '${s.id}', '${s.date}')">${escapeHtml(s.date)} 📅</span></td>
+            <td>${escapeHtml(custName || 'Bilinmeyen Müşteri')}</td>
+            <td>${escapeHtml(s.model)} (${escapeHtml(s.sicil)})</td>
+            <td>${escapeHtml(s.fault)}</td>
+            <td>${escapeHtml(s.action)}</td>
+            <td>${escapeHtml(s.price)} TL</td>
+            <td class="actions">
+              <button class="btn btn-warning" onclick="editService('${s.id}')">Düzenle</button>
+              <button class="btn btn-blue" onclick="deleteService('${s.id}')">Sil</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
 
       // Yapılacaklar Tablosu
       let sortedTodos = [...(window.db.todos || [])];
@@ -877,7 +845,6 @@
         return window.sortDirections.reports === 'asc' ? d1 - d2 : d2 - d1;
       });
 
-      // Raporlar Tablosu
       document.getElementById('reportTableBody').innerHTML = filtered.map(s => {
         const custName = getCustNameById(s.custId);
         return `
