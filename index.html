@@ -345,9 +345,12 @@
       </div>
 
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom: 15px;">
           <h3>Müşteri Listesi</h3>
-          <button class="btn btn-excel" onclick="exportDataToExcel('customers')">Excel'e Aktar</button>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; width: 100%; max-width: 500px;">
+            <input type="text" id="customerSearchInput" oninput="renderCustomersTable()" placeholder="🔍 Müşteri adı, telefon, vergi no veya adres ara..." style="flex:1; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: #0f172a; color: var(--text); outline: none;">
+            <button class="btn btn-excel" onclick="exportDataToExcel('customers')">Excel'e Aktar</button>
+          </div>
         </div>
         <div class="table-container">
           <table id="customerTable">
@@ -682,6 +685,35 @@
       }
     };
 
+    window.renderCustomersTable = function() {
+      const query = (document.getElementById('customerSearchInput')?.value || '').toLowerCase().trim();
+      let filteredCustomers = [...(window.db.customers || [])];
+
+      if (query) {
+        filteredCustomers = filteredCustomers.filter(c => {
+          const name = (c.name || '').toLowerCase();
+          const phone = (c.phone || '').toLowerCase();
+          const taxOffice = (c.taxOffice || '').toLowerCase();
+          const taxNo = (c.taxNo || '').toLowerCase();
+          const address = (c.address || '').toLowerCase();
+          return name.includes(query) || phone.includes(query) || taxOffice.includes(query) || taxNo.includes(query) || address.includes(query);
+        });
+      }
+
+      document.getElementById('customerTableBody').innerHTML = filteredCustomers.map(c => `
+        <tr>
+          <td>${escapeHtml(c.name)}</td>
+          <td>${escapeHtml(c.phone)}</td>
+          <td>${escapeHtml(c.taxOffice)} / ${escapeHtml(c.taxNo)}</td>
+          <td>${escapeHtml(c.address)}</td>
+          <td class="actions">
+            <button class="btn btn-warning" onclick="editCustomer('${c.id}')">Düzenle</button>
+            <button class="btn btn-blue" onclick="deleteCustomer('${c.id}')">Sil</button>
+          </td>
+        </tr>
+      `).join('');
+    };
+
     window.saveService = function(e) {
       e.preventDefault();
       const id = document.getElementById('servId').value || Date.now().toString();
@@ -807,24 +839,161 @@
       }).join('');
     };
 
+    window.filterReports = function() {
+      const custFilter = (document.getElementById('repCust')?.value || '').toLowerCase().trim();
+      const startDate = document.getElementById('repStartDate')?.value;
+      const endDate = document.getElementById('repEndDate')?.value;
+      const actionFilter = (document.getElementById('repAction')?.value || '').toLowerCase().trim();
+
+      let filtered = [...(window.db.services || [])];
+
+      if (custFilter) {
+        filtered = filtered.filter(s => getCustNameById(s.custId).toLowerCase().includes(custFilter));
+      }
+      if (startDate) {
+        filtered = filtered.filter(s => s.date >= startDate);
+      }
+      if (endDate) {
+        filtered = filtered.filter(s => s.date <= endDate);
+      }
+      if (actionFilter) {
+        filtered = filtered.filter(s => (s.action || '').toLowerCase().includes(actionFilter));
+      }
+
+      filtered.sort((a, b) => {
+        const d1 = new Date(a.date), d2 = new Date(b.date);
+        return window.sortDirections.reports === 'asc' ? d1 - d2 : d2 - d1;
+      });
+
+      document.getElementById('reportTableBody').innerHTML = filtered.map(s => `
+        <tr>
+          <td class="date-col">${escapeHtml(s.date)}</td>
+          <td>${escapeHtml(getCustNameById(s.custId))}</td>
+          <td>${escapeHtml(s.model)}</td>
+          <td>${escapeHtml(s.sicil)}</td>
+          <td>${escapeHtml(s.action)}</td>
+          <td>${escapeHtml(s.price)} TL</td>
+        </tr>
+      `).join('');
+    };
+
+    window.exportDataToExcel = function(type) {
+      let data = [];
+      let filename = 'Saros_Teknoloji_Export.xlsx';
+
+      if (type === 'customers') {
+        filename = 'Musteri_Listesi.xlsx';
+        const query = (document.getElementById('customerSearchInput')?.value || '').toLowerCase().trim();
+        let filteredCustomers = [...(window.db.customers || [])];
+
+        if (query) {
+          filteredCustomers = filteredCustomers.filter(c => {
+            const name = (c.name || '').toLowerCase();
+            const phone = (c.phone || '').toLowerCase();
+            const taxOffice = (c.taxOffice || '').toLowerCase();
+            const taxNo = (c.taxNo || '').toLowerCase();
+            const address = (c.address || '').toLowerCase();
+            return name.includes(query) || phone.includes(query) || taxOffice.includes(query) || taxNo.includes(query) || address.includes(query);
+          });
+        }
+
+        data = filteredCustomers.map(c => ({
+          'Müşteri Adı': c.name,
+          'Telefon': c.phone,
+          'Vergi Dairesi': c.taxOffice,
+          'Vergi No': c.taxNo,
+          'Adres': c.address
+        }));
+      } else if (type === 'services') {
+        filename = 'Servis_Kayitlari.xlsx';
+        data = (window.db.services || []).map(s => ({
+          'Tarih': s.date,
+          'Müşteri': getCustNameById(s.custId),
+          'Model': s.model,
+          'Sicil No': s.sicil,
+          'Arıza': s.fault,
+          'Yapılan İşlem': s.action,
+          'Ücret (TL)': s.price
+        }));
+      } else if (type === 'reports') {
+        filename = 'Servis_Raporu.xlsx';
+        const custFilter = (document.getElementById('repCust')?.value || '').toLowerCase().trim();
+        const startDate = document.getElementById('repStartDate')?.value;
+        const endDate = document.getElementById('repEndDate')?.value;
+        const actionFilter = (document.getElementById('repAction')?.value || '').toLowerCase().trim();
+
+        let filtered = [...(window.db.services || [])];
+        if (custFilter) filtered = filtered.filter(s => getCustNameById(s.custId).toLowerCase().includes(custFilter));
+        if (startDate) filtered = filtered.filter(s => s.date >= startDate);
+        if (endDate) filtered = filtered.filter(s => s.date <= endDate);
+        if (actionFilter) filtered = filtered.filter(s => (s.action || '').toLowerCase().includes(actionFilter));
+
+        data = filtered.map(s => ({
+          'Tarih': s.date,
+          'Müşteri': getCustNameById(s.custId),
+          'Model': s.model,
+          'Sicil No': s.sicil,
+          'Yapılan İşlem': s.action,
+          'Ücret (TL)': s.price
+        }));
+      }
+
+      if (data.length === 0) {
+        alert("Dışa aktarılacak veri bulunamadı.");
+        return;
+      }
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Veriler");
+      XLSX.writeFile(wb, filename);
+    };
+
+    window.exportBackup = function() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.db, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `saros_teknoloji_yedek_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    };
+
+    window.importBackup = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const importedData = JSON.parse(evt.target.result);
+          if (importedData && (importedData.customers || importedData.services || importedData.todos)) {
+            if (confirm("Mevcut verilerinizin üzerine yedekteki veriler yazılacaktır. Onaylıyor musunuz?")) {
+              window.db = {
+                customers: importedData.customers || [],
+                services: importedData.services || [],
+                todos: importedData.todos || []
+              };
+              saveDB();
+              alert("Veriler başarıyla buluta aktarıldı ve yüklendi.");
+            }
+          } else {
+            alert("Geçersiz yedek dosyası formatı!");
+          }
+        } catch (err) {
+          alert("Dosya okuma hatası: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    };
+
     function renderAll() {
       // Müşteriler Datalist
       const customerOptions = (window.db.customers || []).map(c => `<option value="${escapeHtml(c.name)}">`).join('');
       document.getElementById('customerListOptions').innerHTML = customerOptions;
 
-      // Müşteri Tablosu
-      document.getElementById('customerTableBody').innerHTML = (window.db.customers || []).map(c => `
-        <tr>
-          <td>${escapeHtml(c.name)}</td>
-          <td>${escapeHtml(c.phone)}</td>
-          <td>${escapeHtml(c.taxOffice)} / ${escapeHtml(c.taxNo)}</td>
-          <td>${escapeHtml(c.address)}</td>
-          <td class="actions">
-            <button class="btn btn-warning" onclick="editCustomer('${c.id}')">Düzenle</button>
-            <button class="btn btn-blue" onclick="deleteCustomer('${c.id}')">Sil</button>
-          </td>
-        </tr>
-      `).join('');
+      // Müşteri Tablosu (Arama Filtreli)
+      window.renderCustomersTable();
 
       // Servis Kayıtları Tablosu (Arama Filtreli)
       window.renderServicesTable();
@@ -851,157 +1020,9 @@
         `;
       }).join('');
 
+      // Raporlama Tablosu
       window.filterReports();
     }
-
-    window.filterReports = function() {
-      const name = document.getElementById('repCust').value.toLowerCase();
-      const start = document.getElementById('repStartDate').value;
-      const end = document.getElementById('repEndDate').value;
-      const action = document.getElementById('repAction').value.toLowerCase();
-
-      let filtered = (window.db.services || []).filter(s => {
-        const custName = getCustNameById(s.custId).toLowerCase();
-        
-        const matchName = !name || custName.includes(name);
-        const matchAction = !action || s.action.toLowerCase().includes(action);
-        const matchStart = !start || s.date >= start;
-        const matchEnd = !end || s.date <= end;
-
-        return matchName && matchAction && matchStart && matchEnd;
-      });
-
-      filtered.sort((a, b) => {
-        const d1 = new Date(a.date), d2 = new Date(b.date);
-        return window.sortDirections.reports === 'asc' ? d1 - d2 : d2 - d1;
-      });
-
-      document.getElementById('reportTableBody').innerHTML = filtered.map(s => {
-        const custName = getCustNameById(s.custId);
-        return `
-          <tr>
-            <td class="date-col">${escapeHtml(s.date)}</td>
-            <td>${escapeHtml(custName || 'Bilinmeyen Müşteri')}</td>
-            <td>${escapeHtml(s.model)}</td>
-            <td>${escapeHtml(s.sicil)}</td>
-            <td>${escapeHtml(s.action)}</td>
-            <td>${escapeHtml(s.price)} TL</td>
-          </tr>
-        `;
-      }).join('');
-    };
-
-    // Excel Aktarım Fonksiyonu (SheetJS)
-    window.exportDataToExcel = function(type) {
-      let data = [];
-      let filename = 'rapor.xlsx';
-
-      if (type === 'customers') {
-        filename = 'Musteri_Listesi.xlsx';
-        data = (window.db.customers || []).map(c => ({
-          'Müşteri Adı': c.name,
-          'Telefon': c.phone,
-          'Vergi Dairesi': c.taxOffice,
-          'Vergi No': c.taxNo,
-          'Adres': c.address
-        }));
-      } else if (type === 'services') {
-        filename = 'Servis_Kayitlari.xlsx';
-        const query = (document.getElementById('serviceSearchInput')?.value || '').toLowerCase().trim();
-        let servicesToExport = window.db.services || [];
-        if (query) {
-          servicesToExport = servicesToExport.filter(s => {
-            const custName = getCustNameById(s.custId).toLowerCase();
-            const model = (s.model || '').toLowerCase();
-            const sicil = (s.sicil || '').toLowerCase();
-            const fault = (s.fault || '').toLowerCase();
-            const action = (s.action || '').toLowerCase();
-            return custName.includes(query) || model.includes(query) || sicil.includes(query) || fault.includes(query) || action.includes(query);
-          });
-        }
-        data = servicesToExport.map(s => ({
-          'Tarih': s.date,
-          'Müşteri': getCustNameById(s.custId),
-          'Cihaz Modeli': s.model,
-          'Sicil No': s.sicil,
-          'Arıza': s.fault,
-          'Yapılan İşlem': s.action,
-          'Ücret (TL)': s.price
-        }));
-      } else if (type === 'reports') {
-        filename = 'Servis_Raporu.xlsx';
-        const name = document.getElementById('repCust').value.toLowerCase();
-        const start = document.getElementById('repStartDate').value;
-        const end = document.getElementById('repEndDate').value;
-        const action = document.getElementById('repAction').value.toLowerCase();
-
-        data = (window.db.services || []).filter(s => {
-          const custName = getCustNameById(s.custId).toLowerCase();
-          return (!name || custName.includes(name)) &&
-                 (!action || s.action.toLowerCase().includes(action)) &&
-                 (!start || s.date >= start) &&
-                 (!end || s.date <= end);
-        }).map(s => ({
-          'Tarih': s.date,
-          'Müşteri': getCustNameById(s.custId),
-          'Cihaz Modeli': s.model,
-          'Sicil No': s.sicil,
-          'Yapılan İşlem': s.action,
-          'Ücret (TL)': s.price
-        }));
-      }
-
-      if (data.length === 0) {
-        alert('Aktarılacak veri bulunamadı.');
-        return;
-      }
-
-      const ws = XLSX.utils.json_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Veriler");
-      XLSX.writeFile(wb, filename);
-    };
-
-    // Yedek İndirme (JSON Export)
-    window.exportBackup = function() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.db, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `saros_teknoloji_yedek_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    };
-
-    // Yedek Yükleme (JSON Import)
-    window.importBackup = function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          const importedData = JSON.parse(evt.target.result);
-          if (importedData && (importedData.customers || importedData.services || importedData.todos)) {
-            if (confirm("Mevcut verilerinizin üzerine yedekteki veriler yazılacaktır. Onaylıyor musunuz?")) {
-              window.db = {
-                customers: importedData.customers || [],
-                services: importedData.services || [],
-                todos: importedData.todos || []
-              };
-              saveDB();
-              alert("Yedek başarıyla bulut veritabanına aktarıldı.");
-            }
-          } else {
-            alert("Geçersiz yedek dosyası formatı!");
-          }
-        } catch (err) {
-          alert("Dosya okuma hatası: " + err.message);
-        }
-      };
-      reader.readAsText(file);
-    };
-
   </script>
 </body>
 </html>
